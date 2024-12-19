@@ -1,6 +1,7 @@
 import pygame
 import sys
 
+from player import Player
 from settings import Settings
 
 class Game:
@@ -22,6 +23,9 @@ class Game:
 		pygame.display.set_caption("Squares")
 
 
+		self.localPlayer: Player = Player(self, 100, 100)
+
+
 	def run(self) -> None:
 		while True:
 			self._checkEvents()
@@ -31,6 +35,9 @@ class Game:
 		# all coordinates are in the 1600x900 screen and scaled from there when drawing
 
 		self.screen.fill(self.settings.colorBg)
+
+		self.localPlayer.draw()
+
 
 		self.physicalScreen.fill(self.settings.colorScreenOverflow)
 		self.physicalScreen.blit(self.screen, self.screenOffset)
