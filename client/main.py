@@ -10,9 +10,13 @@ class Game:
 
 		self.settings: Settings = Settings()
 
+
 		self.physicalScreen: pygame.Surface = pygame.display.set_mode((self.settings.screenPhysicalWidth, self.settings.screenPhysicalHeight), pygame.RESIZABLE)
 
-		self.screen: pygame.Surface = pygame.Surface((self.settings.screenWidth, self.settings.screenHeight))
+		self.screenWidth: int = self.settings.screenPhysicalWidth
+		self.screenHeight: int = self.settings.screenPhysicalHeight
+
+		self.screen: pygame.Surface = pygame.Surface((self.screenWidth, self.screenHeight))
 		self.screenOffset: tuple[int,int] = (0, 0)
 
 		pygame.display.set_caption("Squares")
@@ -58,20 +62,20 @@ class Game:
 		# more -> vertical bars
 		# less -> horizontal bars
 		if aspectRatio > self.settings.screenAspectRatio:
-			self.settings.screenHeight = newY
-			self.settings.screenWidth = self.settings.screenAspectRatio * newY
+			self.screenHeight = newY
+			self.screenWidth = self.settings.screenAspectRatio * newY
 
-			barWidth = newX-self.settings.screenWidth
+			barWidth = newX-self.screenWidth
 			self.screenOffset = (barWidth/2, 0)
 			
 		else:
-			self.settings.screenWidth = newX
-			self.settings.screenHeight = newX / self.settings.screenAspectRatio
+			self.screenWidth = newX
+			self.screenHeight = newX / self.settings.screenAspectRatio
 		
-			barHeight = newY-self.settings.screenHeight
+			barHeight = newY-self.screenHeight
 			self.screenOffset = (0, barHeight/2)
 
-		self.screen: pygame.Surface = pygame.Surface((self.settings.screenWidth, self.settings.screenHeight))
+		self.screen: pygame.Surface = pygame.Surface((self.screenWidth, self.screenHeight))
 
 
 	def exitGame(self) -> None:

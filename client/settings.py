@@ -11,9 +11,6 @@ class Settings:
 		
 		self.screenAspectRatio: float = self.screenPhysicalWidth / self.screenPhysicalHeight
 
-		self.screenWidth = self.screenPhysicalWidth
-		self.screenHeight = self.screenPhysicalHeight
-
 		# colors
 		self.colorScreenOverflow: color = (0, 0, 0)
 		self.colorBg: color = (63, 63, 63)
