@@ -15,3 +15,5 @@ class Settings:
 		self.colorScreenOverflow: color = (0, 0, 0)
 		self.colorBg: color = (63, 63, 63)
 
+		# player
+		self.playerSize: int = 100

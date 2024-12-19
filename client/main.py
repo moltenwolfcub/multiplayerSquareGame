@@ -41,11 +41,22 @@ class Game:
 			self._updateScreen()
 	
 	def _updateScreen(self) -> None:
-		# all coordinates are in the 1600x900 screen and scaled from there when drawing
+		# all coordinates are in the 1600 x 900 screen and scaled from there when drawing
+		def scaler(r: pygame.Rect) -> pygame.Rect:
+			'''Scales any rects from 1600 x 900 space to virtualScreen space'''
+
+			scaleAmount: float = self.virtualScreenWidth / self.settings.screenWidth
+			return pygame.Rect(
+				r.x * scaleAmount,
+				r.y * scaleAmount,
+				r.w * scaleAmount,
+				r.h * scaleAmount,
+			)
+
 
 		self.screen.fill(self.settings.colorBg)
 
-		self.localPlayer.draw()
+		self.localPlayer.draw(scaler)
 
 
 		self.physicalScreen.fill(self.settings.colorScreenOverflow)
