@@ -24,6 +24,8 @@ class Game:
 			self._updateScreen()
 	
 	def _updateScreen(self) -> None:
+		# all coordinates are in the 1600x900 screen and scaled from there when drawing
+
 		self.screen.fill(self.settings.colorBg)
 
 		self.physicalScreen.fill(self.settings.colorScreenOverflow)
