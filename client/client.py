@@ -10,10 +10,10 @@ class Game:
 
 		self.settings: Settings = Settings()
 
-		self.screen: pygame.Surface = pygame.display.set_mode((self.settings.screenWidth, self.settings.screenHeight), pygame.RESIZABLE)
+		self.physicalScreen: pygame.Surface = pygame.display.set_mode((self.settings.screenPhysicalWidth, self.settings.screenPhysicalHeight), pygame.RESIZABLE)
 
-		self.virtualScreen: pygame.Surface = pygame.Surface((self.settings.screenVirtualWidth, self.settings.screenVirtualHeight))
-		self.virtualScreenOffset: tuple[int,int] = (0, 0)
+		self.screen: pygame.Surface = pygame.Surface((self.settings.screenWidth, self.settings.screenHeight))
+		self.screenOffset: tuple[int,int] = (0, 0)
 
 		pygame.display.set_caption("Squares")
 
@@ -24,10 +24,10 @@ class Game:
 			self._updateScreen()
 	
 	def _updateScreen(self) -> None:
-		self.virtualScreen.fill(self.settings.colorBg)
+		self.screen.fill(self.settings.colorBg)
 
-		self.screen.fill(self.settings.colorScreenOverflow)
-		self.screen.blit(self.virtualScreen, self.virtualScreenOffset)
+		self.physicalScreen.fill(self.settings.colorScreenOverflow)
+		self.physicalScreen.blit(self.screen, self.screenOffset)
 		pygame.display.flip()
 
 	def _checkEvents(self) -> None:
@@ -56,21 +56,21 @@ class Game:
 		# more -> vertical bars
 		# less -> horizontal bars
 		if aspectRatio > self.settings.screenAspectRatio:
-			self.settings.screenVirtualHeight = newY
-			self.settings.screenVirtualWidth = self.settings.screenAspectRatio * newY
+			self.settings.screenHeight = newY
+			self.settings.screenWidth = self.settings.screenAspectRatio * newY
 
-			barWidth = newX-self.settings.screenVirtualWidth
-			self.virtualScreenOffset = (barWidth/2, 0)
+			barWidth = newX-self.settings.screenWidth
+			self.screenOffset = (barWidth/2, 0)
 			
 		else:
-			self.settings.screenVirtualWidth = newX
-			self.settings.screenVirtualHeight = newX / self.settings.screenAspectRatio
+			self.settings.screenWidth = newX
+			self.settings.screenHeight = newX / self.settings.screenAspectRatio
 		
-			barHeight = newY-self.settings.screenVirtualHeight
-			self.virtualScreenOffset = (0, barHeight/2)
+			barHeight = newY-self.settings.screenHeight
+			self.screenOffset = (0, barHeight/2)
 
-		self.virtualScreen: pygame.Surface = pygame.Surface((self.settings.screenVirtualWidth, self.settings.screenVirtualHeight))
-	
+		self.screen: pygame.Surface = pygame.Surface((self.settings.screenWidth, self.settings.screenHeight))
+
 
 	def exitGame(self) -> None:
 		sys.exit()

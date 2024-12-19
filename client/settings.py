@@ -5,14 +5,14 @@ class Settings:
 
 	def __init__(self) -> None:
 
-		#screen
-		self.screenWidth: int = 1600
-		self.screenHeight: int = 900
+		# screen
+		self.screenPhysicalWidth: int = 1600
+		self.screenPhysicalHeight: int = 900
 		
-		self.screenAspectRatio: float = self.screenWidth / self.screenHeight
+		self.screenAspectRatio: float = self.screenPhysicalWidth / self.screenPhysicalHeight
 
-		self.screenVirtualWidth = self.screenWidth
-		self.screenVirtualHeight = self.screenHeight
+		self.screenWidth = self.screenPhysicalWidth
+		self.screenHeight = self.screenPhysicalHeight
 
 		# colors
 		self.colorScreenOverflow: color = (0, 0, 0)
