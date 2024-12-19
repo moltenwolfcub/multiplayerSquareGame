@@ -1,4 +1,5 @@
 
+type color = tuple[int,int,int]
 
 class Settings:
 
@@ -10,6 +11,10 @@ class Settings:
 		
 		self.screenAspectRatio: float = self.screenWidth / self.screenHeight
 
+		self.screenVirtualWidth = self.screenWidth
+		self.screenVirtualHeight = self.screenHeight
+
 		# colors
-		self.colorBg: tuple[int, int, int] = (63, 63, 63)
+		self.colorScreenOverflow: color = (0, 0, 0)
+		self.colorBg: color = (63, 63, 63)
 
