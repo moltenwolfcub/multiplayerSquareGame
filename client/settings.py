@@ -4,10 +4,12 @@ class Settings:
 
 	def __init__(self) -> None:
 
-		self.screenWidth = 1920
-		self.screenHeight = 1080
+		#screen
+		self.screenWidth: int = 1600
+		self.screenHeight: int = 900
 		
-		self.screenAspectRatio = self.screenWidth / self.screenHeight
+		self.screenAspectRatio: float = self.screenWidth / self.screenHeight
 
-		self.colorBg = (63, 63, 63)
+		# colors
+		self.colorBg: tuple[int, int, int] = (63, 63, 63)
 

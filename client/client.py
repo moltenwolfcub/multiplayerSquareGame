@@ -8,9 +8,9 @@ class Game:
 	def __init__(self) -> None:
 		pygame.init()
 
-		self.settings = Settings()
+		self.settings: Settings = Settings()
 
-		self.screen = pygame.display.set_mode((self.settings.screenWidth, self.settings.screenHeight), pygame.RESIZABLE)
+		self.screen: pygame.Surface = pygame.display.set_mode((self.settings.screenWidth, self.settings.screenHeight), pygame.RESIZABLE)
 		pygame.display.set_caption("Squares")
 
 	def run(self) -> None:
@@ -24,7 +24,6 @@ class Game:
 		pygame.display.flip()
 
 	def _checkEvents(self) -> None:
-		"""Respond to keypresses and mouse events"""
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.exitGame()
@@ -36,16 +35,14 @@ class Game:
 			elif event.type == pygame.VIDEORESIZE:
 				self._resizeScreen(event)
 				   
-	def _checkKeydownEvents(self, event) -> None:
-		"""Respond to key presses."""
+	def _checkKeydownEvents(self, event: pygame.event.Event) -> None:
 		if event.key == pygame.K_ESCAPE:
 			self.exitGame()
 
-	def _checkKeyupEvents(self, event) -> None:
-		"""Respond to key releases"""
+	def _checkKeyupEvents(self, event: pygame.event.Event) -> None:
 		pass
 	
-	def _resizeScreen(self, event) -> None:
+	def _resizeScreen(self, event: pygame.event.Event) -> None:
 		pass
 			
 	def exitGame(self) -> None:
@@ -53,5 +50,5 @@ class Game:
 
 
 if __name__ == '__main__':
-	instance = Game()
+	instance: Game = Game()
 	instance.run()
