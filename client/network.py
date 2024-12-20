@@ -31,7 +31,7 @@ class Network:
 			self.client.close()
 			sys.exit()
 		
-		self.client.send(C2SHandshake().encode())
+		self.client.send(C2SHandshake("").encode())
 
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
 		packetType = Packet.decodeID(rawPacket)
@@ -43,6 +43,11 @@ class Network:
 				if not packet.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
+				
+			case packetIDs.S2C_HANDSHAKE_FAIL:
+				print("Server error during handshake. Aborting")
+				self.client.close()
+				sys.exit()
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
