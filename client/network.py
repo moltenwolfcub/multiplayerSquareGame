@@ -52,6 +52,3 @@ class Network:
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
-
-n = Network()
-input() # to stop auto-closing program
