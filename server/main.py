@@ -1,12 +1,21 @@
+import queue
 import socket
 import _thread
 import sys
+from typing import Optional
+
+from common import packetIDs
+from common.c2sPackets import C2SHandhsake
+from common.packetBase import Packet
+from common.s2cPackets import S2CHandhsake
 
 class Server:
 
 	def __init__(self) -> None:
 		self.server: str = "127.0.0.1"
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
 
 	def start(self) -> None:
 		try:
@@ -35,14 +44,27 @@ class Server:
 	
 	def readLoop(self, conn: socket.socket) -> None:
 		'''One per client to store received packets for later processing'''
+		conn.send(S2CHandhsake().encode())
+		checkPacket = conn.recv(8)
+		if not checkPacket:
+			print(f"Unable to connect to peer: {conn.getpeername()}")
+			conn.close()
+			return
+		if self.handlePacket(checkPacket) is not None:
+			print(f"Handshake failed when connecting to peer: {conn.getpeername()}")
+			conn.close()
+			return
 
 		while True:
 			try:
-				data = conn.recv(2048)
+				rawData = conn.recv(2048)
 
-				if not data:
+				if not rawData:
 					print("Disconnected")
 					break
+
+				self.recievedPackets.put(rawData)
+
 			except:
 				break
 		
@@ -52,13 +74,28 @@ class Server:
 	def packetLoop(self) -> None:
 		'''Processes all recieved packets'''
 		while True:
-			pass
+			rawPacket = self.recievedPackets.get()
+			self.handlePacket(rawPacket)
+			self.recievedPackets.task_done()
 
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while True:
 			pass
 
+
+	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
+		packetType = Packet.decodeID(rawPacket)
+
+		match packetType:
+			case packetIDs.C2S_HANDSHAKE:
+				packet: C2SHandhsake = C2SHandhsake.decodeData(rawPacket)
+
+				if not packet.isCorrect():
+					print("Error during handshake")
+					return ConnectionError()
+			case _:
+				pass
 
 	def closeServer(self) -> None:
 		sys.exit()
