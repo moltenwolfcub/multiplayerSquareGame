@@ -5,7 +5,7 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-	from main import Game
+	from client.main import Game
 
 class Player:
 	'''General player for rendering local and remote players'''

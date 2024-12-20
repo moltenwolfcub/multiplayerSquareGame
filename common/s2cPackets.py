@@ -1,7 +1,7 @@
 from typing import override
 
-import packetIDs
-from packetBase import Packet
+from common import packetIDs
+from common.packetBase import Packet
 
 EXPECTED_MSG = "ping"
 

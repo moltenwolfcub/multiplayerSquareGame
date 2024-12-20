@@ -1,8 +1,8 @@
 import pygame
 import sys
 
-from player import Player
-from settings import Settings
+from client.player import Player
+from client.settings import Settings
 
 class Game:
 
