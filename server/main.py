@@ -116,7 +116,7 @@ class Server:
 			return ConnectionError()
 		
 		if self.handlePacket(checkPacket) is not None:
-			print(f"Handshake failed when connecting to peer: {conn.getpeername()}")
+			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
 			conn.send(S2CFailedHandhsake().encode())
 			conn.close()
 			return ConnectionError()
