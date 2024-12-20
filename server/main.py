@@ -102,7 +102,12 @@ class Server:
 
 	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
 		conn.send(S2CHandhsake().encode())
-		checkPacket = conn.recv(8)
+		try:
+			checkPacket = conn.recv(8)
+		except ConnectionResetError:
+			print(f"Error during response from closed peer.")
+			conn.close()
+			return ConnectionError()
 
 		if not checkPacket:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
