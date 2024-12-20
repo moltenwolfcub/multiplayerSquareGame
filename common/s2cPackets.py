@@ -3,7 +3,7 @@ from typing import override
 from common import packetIDs
 from common.packetBase import Packet
 
-class S2CHandhsake(Packet):
+class S2CHandshake(Packet):
 	EXPECTED_MSG: str = "ping"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
 		super().__init__(packetIDs.S2C_HANDSHAKE)
@@ -16,17 +16,17 @@ class S2CHandhsake(Packet):
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'S2CHandhsake':
+	def decodeData(data: bytes) -> 'S2CHandshake':
 		packetData = data[1:]
 
 		msg = packetData.decode("utf-8")
-		return S2CHandhsake(msg)
+		return S2CHandshake(msg)
 	
 	def isCorrect(self) -> bool:
 		return self.message == self.EXPECTED_MSG
 
 
-class S2CFailedHandhsake(Packet):
+class S2CFailedHandshake(Packet):
 	def __init__(self) -> None:
 		super().__init__(packetIDs.S2C_HANDSHAKE_FAIL)
 	
@@ -36,5 +36,5 @@ class S2CFailedHandhsake(Packet):
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'S2CHandhsake':
-		return S2CHandhsake()
+	def decodeData(data: bytes) -> 'S2CHandshake':
+		return S2CHandshake()

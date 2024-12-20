@@ -5,7 +5,7 @@ from common.packetBase import Packet
 
 EXPECTED_MSG = "pong"
 
-class C2SHandhsake(Packet):
+class C2SHandshake(Packet):
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
 		super().__init__(packetIDs.C2S_HANDSHAKE)
 
@@ -17,11 +17,11 @@ class C2SHandhsake(Packet):
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'C2SHandhsake':
+	def decodeData(data: bytes) -> 'C2SHandshake':
 		packetData = data[1:]
 
 		msg = packetData.decode("utf-8")
-		return C2SHandhsake(msg)
+		return C2SHandshake(msg)
 	
 	def isCorrect(self) -> bool:
 		return self.message == EXPECTED_MSG

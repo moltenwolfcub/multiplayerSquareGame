@@ -5,9 +5,9 @@ import sys
 from typing import Optional
 
 from common import packetIDs
-from common.c2sPackets import C2SHandhsake
+from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
-from common.s2cPackets import S2CFailedHandhsake, S2CHandhsake
+from common.s2cPackets import S2CFailedHandshake, S2CHandshake
 
 class Server:
 
@@ -91,7 +91,7 @@ class Server:
 
 		match packetType:
 			case packetIDs.C2S_HANDSHAKE:
-				packet: C2SHandhsake = C2SHandhsake.decodeData(rawPacket)
+				packet: C2SHandshake = C2SHandshake.decodeData(rawPacket)
 
 				if not packet.isCorrect():
 					print("Error during handshake")
@@ -101,7 +101,7 @@ class Server:
 				return ConnectionError()
 
 	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
-		conn.send(S2CHandhsake().encode())
+		conn.send(S2CHandshake().encode())
 		try:
 			checkPacket = conn.recv(8)
 		except ConnectionResetError:
@@ -111,13 +111,13 @@ class Server:
 
 		if not checkPacket:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
-			conn.send(S2CFailedHandhsake().encode())
+			conn.send(S2CFailedHandshake().encode())
 			conn.close()
 			return ConnectionError()
 		
 		if self.handlePacket(checkPacket) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
-			conn.send(S2CFailedHandhsake().encode())
+			conn.send(S2CFailedHandshake().encode())
 			conn.close()
 			return ConnectionError()
 		

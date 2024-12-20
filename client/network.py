@@ -4,9 +4,9 @@ import sys
 from typing import Optional
 
 from common import packetIDs
-from common.c2sPackets import C2SHandhsake
+from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
-from common.s2cPackets import S2CHandhsake
+from common.s2cPackets import S2CHandshake
 
 class Network:
 	def __init__(self) -> None:
@@ -31,14 +31,14 @@ class Network:
 			self.client.close()
 			sys.exit()
 		
-		self.client.send(C2SHandhsake().encode())
+		self.client.send(C2SHandshake().encode())
 
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
 		packetType = Packet.decodeID(rawPacket)
 
 		match packetType:
 			case packetIDs.S2C_HANDSHAKE:
-				packet: S2CHandhsake = S2CHandhsake.decodeData(rawPacket)
+				packet: S2CHandshake = S2CHandshake.decodeData(rawPacket)
 
 				if not packet.isCorrect():
 					print("Error during handshake")
