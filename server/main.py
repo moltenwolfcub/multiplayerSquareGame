@@ -11,15 +11,17 @@ from common.s2cPackets import S2CHandhsake
 
 class Server:
 
-	def __init__(self) -> None:
+	def __init__(self, port: int = 0) -> None:
 		self.server: str = "127.0.0.1"
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		self.port: int = port
 
 		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
 
 	def start(self) -> None:
 		try:
-			self.socket.bind((self.server, 0))
+			self.socket.bind((self.server, self.port))
 		except socket.error as e:
 			print(e)
 			self.closeServer()

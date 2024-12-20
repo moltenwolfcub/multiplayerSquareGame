@@ -5,7 +5,7 @@ from server.main import Server
 def main() -> None:
 	SERVER: bool = True
 	if SERVER:
-		s: Server = Server()
+		s: Server = Server(5555)
 		s.start()
 	
 	else:
