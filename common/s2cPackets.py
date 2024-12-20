@@ -3,6 +3,7 @@ from typing import override
 from common import packetIDs
 from common.packetBase import Packet
 
+
 class S2CHandshake(Packet):
 	EXPECTED_MSG: str = "ping"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Packet(ABC):
 	def __init__(self, id: int) -> None:
 		self.id: int = id

@@ -1,6 +1,6 @@
+import _thread
 import queue
 import socket
-import _thread
 import sys
 import time
 from typing import Optional
@@ -9,6 +9,7 @@ from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake
+
 
 class Server:
 

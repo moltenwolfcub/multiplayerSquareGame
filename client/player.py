@@ -1,8 +1,6 @@
+from typing import TYPE_CHECKING, Callable
+
 import pygame
-from typing import (
-	TYPE_CHECKING,
-	Callable
-)
 
 if TYPE_CHECKING:
 	from client.main import Game

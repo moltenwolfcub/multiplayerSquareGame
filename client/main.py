@@ -1,8 +1,10 @@
-import pygame
 import sys
+
+import pygame
 
 from client.player import Player
 from client.settings import Settings
+
 
 class Game:
 
