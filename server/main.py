@@ -32,29 +32,21 @@ class Server:
 		_thread.start_new_thread(self.mainLoop, ())
 		_thread.start_new_thread(self.packetLoop, ())
 		_thread.start_new_thread(self.acceptLoop, ())
-
-		input()
+		
+		while True: pass
 
 
 	def acceptLoop(self) -> None:
 		'''Handles accepting new clients'''
 		while True:
 			conn, addr = self.socket.accept()
-			print(f"Connected to: {addr}")
+			print(f"Connecting to: {addr}")
 
 			_thread.start_new_thread(self.readLoop, (conn,))
 	
 	def readLoop(self, conn: socket.socket) -> None:
 		'''One per client to store received packets for later processing'''
-		conn.send(S2CHandhsake().encode())
-		checkPacket = conn.recv(8)
-		if not checkPacket:
-			print(f"Unable to connect to peer: {conn.getpeername()}")
-			conn.close()
-			return
-		if self.handlePacket(checkPacket) is not None:
-			print(f"Handshake failed when connecting to peer: {conn.getpeername()}")
-			conn.close()
+		if self.initialHandshake(conn) is not None:
 			return
 
 		while True:
@@ -97,7 +89,24 @@ class Server:
 					print("Error during handshake")
 					return ConnectionError()
 			case _:
-				pass
+				print(f"Unknown packet (ID: {packetType})")
+				return ConnectionError()
+
+	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
+		conn.send(S2CHandhsake().encode())
+		checkPacket = conn.recv(8)
+
+		if not checkPacket:
+			print(f"No response to handshake from peer: {conn.getpeername()}")
+			conn.close()
+			return ConnectionError()
+		
+		if self.handlePacket(checkPacket) is not None:
+			print(f"Handshake failed when connecting to peer: {conn.getpeername()}")
+			conn.close()
+			return ConnectionError()
+		
+		print(f"Connection established to peer: {conn.getpeername()}")
 
 	def closeServer(self) -> None:
 		sys.exit()
