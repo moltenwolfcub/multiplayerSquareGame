@@ -18,6 +18,7 @@ class Server:
 		self.port: int = port
 
 		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
+		self.quit: bool = False
 
 	def start(self) -> None:
 		try:
@@ -33,12 +34,13 @@ class Server:
 		_thread.start_new_thread(self.packetLoop, ())
 		_thread.start_new_thread(self.acceptLoop, ())
 		
-		while True: pass
+		while not self.quit: pass
+		sys.exit()
 
 
 	def acceptLoop(self) -> None:
 		'''Handles accepting new clients'''
-		while True:
+		while not self.quit:
 			conn, addr = self.socket.accept()
 			print(f"Connecting to: {addr}")
 
@@ -49,7 +51,7 @@ class Server:
 		if self.initialHandshake(conn) is not None:
 			return
 
-		while True:
+		while not self.quit:
 			try:
 				rawData = conn.recv(2048)
 
@@ -67,15 +69,21 @@ class Server:
 	
 	def packetLoop(self) -> None:
 		'''Processes all recieved packets'''
-		while True:
+		while not self.quit:
 			rawPacket = self.recievedPackets.get()
 			self.handlePacket(rawPacket)
 			self.recievedPackets.task_done()
 
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
-		while True:
-			pass
+		while not self.quit:
+			consoleInput: str = input().lower().strip()
+
+			match consoleInput:
+				case "q" | "quit":
+					self.closeServer()
+				case _:
+					pass
 
 
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
@@ -111,7 +119,7 @@ class Server:
 		print(f"Connection established to peer: {conn.getpeername()}")
 
 	def closeServer(self) -> None:
-		sys.exit()
+		self.quit = True
 
 if __name__ == '__main__':
 	s: Server = Server()
