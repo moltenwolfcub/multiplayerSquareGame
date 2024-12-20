@@ -17,8 +17,8 @@ class Packet(ABC):
 		return data[0]
 
 
-	@abstractmethod
 	@staticmethod
+	@abstractmethod
 	def decodeData(data: bytes) -> 'Packet':
 		pass
 
