@@ -7,7 +7,7 @@ from typing import Optional
 from common import packetIDs
 from common.c2sPackets import C2SHandhsake
 from common.packetBase import Packet
-from common.s2cPackets import S2CHandhsake
+from common.s2cPackets import S2CFailedHandhsake, S2CHandhsake
 
 class Server:
 
@@ -98,11 +98,13 @@ class Server:
 
 		if not checkPacket:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
+			conn.send(S2CFailedHandhsake().encode())
 			conn.close()
 			return ConnectionError()
 		
 		if self.handlePacket(checkPacket) is not None:
 			print(f"Handshake failed when connecting to peer: {conn.getpeername()}")
+			conn.send(S2CFailedHandhsake().encode())
 			conn.close()
 			return ConnectionError()
 		

@@ -3,9 +3,8 @@ from typing import override
 from common import packetIDs
 from common.packetBase import Packet
 
-EXPECTED_MSG = "ping"
-
 class S2CHandhsake(Packet):
+	EXPECTED_MSG: str = "ping"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
 		super().__init__(packetIDs.S2C_HANDSHAKE)
 
@@ -24,4 +23,18 @@ class S2CHandhsake(Packet):
 		return S2CHandhsake(msg)
 	
 	def isCorrect(self) -> bool:
-		return self.message == EXPECTED_MSG
+		return self.message == self.EXPECTED_MSG
+
+
+class S2CFailedHandhsake(Packet):
+	def __init__(self) -> None:
+		super().__init__(packetIDs.S2C_HANDSHAKE_FAIL)
+	
+	@override
+	def encodeData(self) -> bytes:
+		return bytes()
+
+	@override
+	@staticmethod
+	def decodeData(data: bytes) -> 'S2CHandhsake':
+		return S2CHandhsake()
