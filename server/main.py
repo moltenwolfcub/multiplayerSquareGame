@@ -2,6 +2,7 @@ import queue
 import socket
 import _thread
 import sys
+import time
 from typing import Optional
 
 from common import packetIDs
@@ -112,12 +113,14 @@ class Server:
 		if not checkPacket:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
 			conn.send(S2CFailedHandshake().encode())
+			time.sleep(0.1) # time for client to close on their end
 			conn.close()
 			return ConnectionError()
 		
 		if self.handlePacket(checkPacket) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
 			conn.send(S2CFailedHandshake().encode())
+			time.sleep(0.1) # time for client to close on their end
 			conn.close()
 			return ConnectionError()
 		

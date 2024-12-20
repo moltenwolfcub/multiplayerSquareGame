@@ -3,5 +3,11 @@
 
 from client.network import Network
 
+import _thread
+
 n = Network()
-input() # to stop auto-closing program
+
+_thread.start_new_thread(n.packetLoop, ())
+_thread.start_new_thread(n.readLoop, ())
+
+while not n.quit:pass # to stop auto-closing program

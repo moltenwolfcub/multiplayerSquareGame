@@ -1,4 +1,5 @@
 import socket
+import queue
 import sys
 
 from typing import Optional
@@ -14,6 +15,9 @@ class Network:
 		self.server: str = "127.0.0.1"
 		self.port: int = 5555
 
+		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
+		self.quit: bool = False
+
 		self.connect()
 
 	def connect(self) -> None:
@@ -22,16 +26,37 @@ class Network:
 
 		if not recieved:
 			print("No handshake sent from server")
-			self.client.close()
-			sys.exit()
+			self.closeConnection()
 		
-		if self.handlePacket(recieved) is not None:
+		elif self.handlePacket(recieved) is not None:
 			print("Handshake failed (incorrect data recieved) when connecting to server")
 			# probably should send back a failure packet but cba rn
-			self.client.close()
-			sys.exit()
+			self.closeConnection()
 		
+		if self.quit:
+			sys.exit()
+
 		self.client.send(C2SHandshake().encode())
+
+	def readLoop(self) -> None:
+		while not self.quit:
+			try:
+				rawData = self.client.recv(2048)
+
+				if not rawData:
+					print("Disconnected")
+					self.closeConnection()
+
+				self.recievedPackets.put(rawData)
+
+			except:
+				break
+
+	def packetLoop(self) -> None:
+		while not self.quit:
+			rawPacket = self.recievedPackets.get()
+			self.handlePacket(rawPacket)
+			self.recievedPackets.task_done()
 
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
 		packetType = Packet.decodeID(rawPacket)
@@ -46,9 +71,16 @@ class Network:
 				
 			case packetIDs.S2C_HANDSHAKE_FAIL:
 				print("Server error during handshake. Aborting")
-				self.client.close()
-				sys.exit()
+				self.closeConnection()
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
+
+	def closeConnection(self) -> None:
+		try:
+			self.client.close()
+		except:
+			pass
+
+		self.quit = True
