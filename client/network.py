@@ -31,7 +31,7 @@ class Network:
 			self.client.close()
 			sys.exit()
 		
-		self.client.send(C2SHandshake("").encode())
+		self.client.send(C2SHandshake().encode())
 
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
 		packetType = Packet.decodeID(rawPacket)
