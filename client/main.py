@@ -10,10 +10,10 @@ from client.settings import Settings
 
 class Game:
 
-	def __init__(self) -> None:
+	def __init__(self, port: int) -> None:
 		pygame.init()
 
-		self.initialiseNetwork()
+		self.initialiseNetwork(port)
 
 		self.settings: Settings = Settings()
 
@@ -40,8 +40,8 @@ class Game:
 
 		self.localPlayer: Player = Player(self, 100, 100)
 
-	def initialiseNetwork(self) -> None:
-		self.network = Network(5555)
+	def initialiseNetwork(self, port: int) -> None:
+		self.network = Network(port)
 		self.network.connect()
 
 		_thread.start_new_thread(self.network.packetLoop, ())
@@ -121,7 +121,3 @@ class Game:
 	def exitGame(self) -> None:
 		sys.exit()
 
-
-if __name__ == '__main__':
-	instance: Game = Game()
-	instance.run()

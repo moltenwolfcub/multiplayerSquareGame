@@ -129,7 +129,3 @@ class Server:
 
 	def closeServer(self) -> None:
 		self.quit = True
-
-if __name__ == '__main__':
-	s: Server = Server()
-	s.start()
