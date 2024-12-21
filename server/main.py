@@ -9,7 +9,7 @@ from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
-from server.game import Game
+from server.gameData import GameData
 from server.rawPacket import RawPacket
 
 
@@ -24,7 +24,7 @@ class Server:
 		self.recievedPackets: queue.Queue[RawPacket] = queue.Queue()
 		self.quit: bool = False
 
-		self.game: Game = Game()
+		self.game: GameData = GameData()
 
 	def start(self) -> None:
 		try:
