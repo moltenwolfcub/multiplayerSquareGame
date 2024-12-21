@@ -5,7 +5,8 @@ import _thread
 
 from client.network import Network
 
-n = Network()
+n = Network(5555)
+n.connect()
 
 _thread.start_new_thread(n.packetLoop, ())
 _thread.start_new_thread(n.readLoop, ())

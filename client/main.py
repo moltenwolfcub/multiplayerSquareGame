@@ -1,7 +1,9 @@
+import _thread
 import sys
 
 import pygame
 
+from client.network import Network
 from client.player import Player
 from client.settings import Settings
 
@@ -10,6 +12,8 @@ class Game:
 
 	def __init__(self) -> None:
 		pygame.init()
+
+		self.initialiseNetwork()
 
 		self.settings: Settings = Settings()
 
@@ -35,6 +39,13 @@ class Game:
 		# endregion
 
 		self.localPlayer: Player = Player(self, 100, 100)
+
+	def initialiseNetwork(self) -> None:
+		self.network = Network(5555)
+		self.network.connect()
+
+		_thread.start_new_thread(self.network.packetLoop, ())
+		_thread.start_new_thread(self.network.readLoop, ())
 
 
 	def run(self) -> None:

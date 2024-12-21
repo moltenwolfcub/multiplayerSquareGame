@@ -10,10 +10,10 @@ from common.s2cPackets import S2CHandshake
 
 
 class Network:
-	def __init__(self) -> None:
+	def __init__(self, port: int) -> None:
 		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server: str = "127.0.0.1"
-		self.port: int = 5555
+		self.port: int = port
 
 		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
 		self.quit: bool = False
@@ -35,6 +35,7 @@ class Network:
 			sys.exit()
 
 		self.client.send(C2SHandshake().encode())
+		print("Successfully established connection to server")
 	
 	def send(self, packet: Packet) -> None:
 		self.client.send(packet.encode())

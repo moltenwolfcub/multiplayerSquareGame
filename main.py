@@ -3,7 +3,7 @@ from server.main import Server
 
 
 def main() -> None:
-	SERVER: bool = True
+	SERVER: bool = False
 	if SERVER:
 		s: Server = Server(5555)
 		s.start()
