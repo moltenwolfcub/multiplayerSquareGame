@@ -40,6 +40,8 @@ class Game:
 
 		self.localPlayer: Player = Player(self, 100, 100)
 
+		self.quit = False
+
 	def initialiseNetwork(self, port: int) -> None:
 		self.network = Network(port)
 		self.network.connect()
@@ -49,9 +51,11 @@ class Game:
 
 
 	def run(self) -> None:
-		while True:
+		while not self.quit:
 			self._checkEvents()
 			self._updateScreen()
+
+		sys.exit()
 	
 	def _updateScreen(self) -> None:
 		# all coordinates are in the 1600 x 900 screen and scaled from there when drawing
@@ -119,5 +123,6 @@ class Game:
 
 
 	def exitGame(self) -> None:
-		sys.exit()
+		self.network.closeConnection()
+		self.quit = True
 
