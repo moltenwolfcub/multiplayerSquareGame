@@ -38,6 +38,7 @@ class Server:
 		self.socket.listen()
 		print(f"Server started on port {self.socket.getsockname()[1]}")
 
+		_thread.start_new_thread(self.consoleLoop, ())
 		_thread.start_new_thread(self.mainLoop, ())
 		_thread.start_new_thread(self.packetLoop, ())
 		_thread.start_new_thread(self.acceptLoop, ())
@@ -94,13 +95,17 @@ class Server:
 				c.send(S2CPlayers(self.game.players).encode())
 
 			time.sleep(0.1)
-			# consoleInput: str = input().lower().strip()
 
-			# match consoleInput:
-			# 	case "q" | "quit":
-			# 		self.closeServer()
-			# 	case _:
-			# 		pass
+	def consoleLoop(self) -> None:
+		'''Handles server console commands'''
+		while not self.quit:
+			consoleInput: str = input().lower().strip()
+
+			match consoleInput:
+				case "q" | "quit":
+					self.closeServer()
+				case _:
+					pass
 
 
 	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
