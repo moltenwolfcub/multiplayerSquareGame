@@ -86,46 +86,6 @@ class Server:
 			self.handlePacket(rawPacket)
 			self.recievedPackets.task_done()
 
-	def mainLoop(self) -> None:
-		'''Handles main game logic separate from network events'''
-		while not self.quit:
-			self.game.update()
-			
-			for c in self.openConnections:
-				c.send(S2CPlayers(self.game.players).encode())
-
-			time.sleep(0.1)
-
-	def consoleLoop(self) -> None:
-		'''Handles server console commands'''
-		while not self.quit:
-			consoleInput: str = input().lower().strip()
-
-			match consoleInput:
-				case "q" | "quit":
-					self.closeServer()
-				case _:
-					pass
-
-
-	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
-		packetType: int = Packet.decodeID(rawPacket.data)
-
-		match packetType:
-			case packetIDs.C2S_HANDSHAKE:
-				handshakePacket: C2SHandshake = C2SHandshake.decodeData(rawPacket.data)
-
-				if not handshakePacket.isCorrect():
-					print("Error during handshake")
-					return ConnectionError()
-			
-			case packetIDs.C2S_PLAYER_REQUEST:
-				rawPacket.sender.send(S2CPlayers(self.game.players).encode())
-
-			case _:
-				print(f"Unknown packet (ID: {packetType})")
-				return ConnectionError()
-
 	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
 		conn.send(S2CHandshake().encode())
 		try:
@@ -153,3 +113,44 @@ class Server:
 
 	def closeServer(self) -> None:
 		self.quit = True
+
+#===== ABOVE THIS LINE IS NETWORK INTERNALS =====
+
+	def mainLoop(self) -> None:
+		'''Handles main game logic separate from network events'''
+		while not self.quit:
+			self.game.update()
+			
+			for c in self.openConnections:
+				c.send(S2CPlayers(self.game.players).encode())
+
+			time.sleep(0.1)
+
+	def consoleLoop(self) -> None:
+		'''Handles server console commands'''
+		while not self.quit:
+			consoleInput: str = input().lower().strip()
+
+			match consoleInput:
+				case "q" | "quit":
+					self.closeServer()
+				case _:
+					pass
+
+	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
+		packetType: int = Packet.decodeID(rawPacket.data)
+
+		match packetType:
+			case packetIDs.C2S_HANDSHAKE:
+				handshakePacket: C2SHandshake = C2SHandshake.decodeData(rawPacket.data)
+
+				if not handshakePacket.isCorrect():
+					print("Error during handshake")
+					return ConnectionError()
+			
+			case packetIDs.C2S_PLAYER_REQUEST:
+				rawPacket.sender.send(S2CPlayers(self.game.players).encode())
+
+			case _:
+				print(f"Unknown packet (ID: {packetType})")
+				return ConnectionError()

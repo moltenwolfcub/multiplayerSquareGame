@@ -65,6 +65,16 @@ class Network:
 			self.handlePacket(rawPacket)
 			self.recievedPackets.task_done()
 
+	def closeConnection(self) -> None:
+		try:
+			self.client.close()
+		except:
+			pass
+
+		self.quit = True
+
+#===== ABOVE THIS LINE IS NETWORK INTERNALS =====
+
 	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
 		packetType = Packet.decodeID(rawPacket)
 
@@ -93,11 +103,3 @@ class Network:
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
-
-	def closeConnection(self) -> None:
-		try:
-			self.client.close()
-		except:
-			pass
-
-		self.quit = True

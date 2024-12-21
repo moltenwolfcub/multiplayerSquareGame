@@ -1,6 +1,4 @@
-
 import socket
-
 
 class RawPacket:
 	def __init__(self, data: bytes, sender: socket.socket) -> None:
