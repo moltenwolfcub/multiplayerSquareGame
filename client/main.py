@@ -6,6 +6,7 @@ import pygame
 from client.network import Network
 from client.player import Player
 from client.settings import Settings
+from common.c2sPackets import C2SRequestPlayerList
 
 
 class Game:
@@ -38,12 +39,13 @@ class Game:
 
 		# endregion
 
-		self.localPlayer: Player = Player(self, 100, 100)
+		self.players: list[Player] = []
+		self.network.send(C2SRequestPlayerList())
 
 		self.quit = False
 
 	def initialiseNetwork(self, port: int) -> None:
-		self.network = Network(port)
+		self.network = Network(self, port)
 		self.network.connect()
 
 		_thread.start_new_thread(self.network.packetLoop, ())
@@ -73,8 +75,8 @@ class Game:
 
 		self.screen.fill(self.settings.colorBg)
 
-		self.localPlayer.draw(scaler)
-
+		for player in self.players:
+			player.draw(scaler)
 
 		self.physicalScreen.fill(self.settings.colorScreenOverflow)
 		self.physicalScreen.blit(self.screen, self.screenOffset)

@@ -2,6 +2,7 @@ from typing import override
 
 from common import packetIDs
 from common.packetBase import Packet
+from common.player import Player
 
 
 class S2CHandshake(Packet):
@@ -39,3 +40,37 @@ class S2CFailedHandshake(Packet):
 	@staticmethod
 	def decodeData(data: bytes) -> 'S2CHandshake':
 		return S2CHandshake()
+
+
+class S2CPlayers(Packet):
+	def __init__(self, players: list[Player]) -> None:
+		super().__init__(packetIDs.S2C_PLAYERS)
+
+		self.players = players
+
+	@override
+	def encodeData(self) -> bytes:
+		b = bytes()
+		for player in self.players:
+			b += player.encode()
+		
+		return b
+
+	@override
+	@staticmethod
+	def decodeData(data: bytes) -> 'S2CPlayers':
+		packetData = data[1:]
+
+		playerList: list[Player] = []
+
+		players = [ packetData[i:i+Player.ENCODED_SIZE] for i in range(0, len(packetData), Player.ENCODED_SIZE) ]
+
+		for p in players:
+			if len(p) == 0:
+				continue
+
+			player = Player.decode(p)
+
+			playerList.append(player)
+
+		return S2CPlayers(playerList)

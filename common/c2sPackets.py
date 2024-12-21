@@ -3,9 +3,8 @@ from typing import override
 from common import packetIDs
 from common.packetBase import Packet
 
-EXPECTED_MSG = "pong"
-
 class C2SHandshake(Packet):
+	EXPECTED_MSG = "pong"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
 		super().__init__(packetIDs.C2S_HANDSHAKE)
 
@@ -24,4 +23,17 @@ class C2SHandshake(Packet):
 		return C2SHandshake(msg)
 	
 	def isCorrect(self) -> bool:
-		return self.message == EXPECTED_MSG
+		return self.message == self.EXPECTED_MSG
+
+class C2SRequestPlayerList(Packet):
+	def __init__(self) -> None:
+		super().__init__(packetIDs.C2S_PLAYER_REQUEST)
+
+	@override
+	def encodeData(self) -> bytes:
+		return bytes()
+
+	@override
+	@staticmethod
+	def decodeData(data: bytes) -> 'C2SRequestPlayerList':
+		return C2SRequestPlayerList()

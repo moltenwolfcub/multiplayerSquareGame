@@ -8,7 +8,9 @@ from typing import Optional
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
-from common.s2cPackets import S2CFailedHandshake, S2CHandshake
+from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
+from server.game import Game
+from server.rawPacket import RawPacket
 
 
 class Server:
@@ -19,8 +21,10 @@ class Server:
 
 		self.port: int = port
 
-		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
+		self.recievedPackets: queue.Queue[RawPacket] = queue.Queue()
 		self.quit: bool = False
+
+		self.game: Game = Game()
 
 	def start(self) -> None:
 		try:
@@ -61,7 +65,7 @@ class Server:
 					print("Disconnected")
 					break
 
-				self.recievedPackets.put(rawData)
+				self.recievedPackets.put(RawPacket(rawData, conn))
 
 			except:
 				break
@@ -88,16 +92,20 @@ class Server:
 					pass
 
 
-	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
-		packetType = Packet.decodeID(rawPacket)
+	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
+		packetType: int = Packet.decodeID(rawPacket.data)
 
 		match packetType:
 			case packetIDs.C2S_HANDSHAKE:
-				packet: C2SHandshake = C2SHandshake.decodeData(rawPacket)
+				handshakePacket: C2SHandshake = C2SHandshake.decodeData(rawPacket.data)
 
-				if not packet.isCorrect():
+				if not handshakePacket.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
+			
+			case packetIDs.C2S_PLAYER_REQUEST:
+				rawPacket.sender.send(S2CPlayers(self.game.players).encode())
+
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
@@ -118,7 +126,7 @@ class Server:
 			conn.close()
 			return ConnectionError()
 		
-		if self.handlePacket(checkPacket) is not None:
+		if self.handlePacket(RawPacket(checkPacket, conn)) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
 			conn.send(S2CFailedHandshake().encode())
 			time.sleep(0.1) # time for client to close on their end

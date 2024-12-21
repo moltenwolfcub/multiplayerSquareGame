@@ -1,16 +1,21 @@
 import queue
 import socket
 import sys
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
+from client.player import Player
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
-from common.s2cPackets import S2CHandshake
+from common.s2cPackets import S2CHandshake, S2CPlayers
 
+if TYPE_CHECKING:
+	from client.main import Game
 
 class Network:
-	def __init__(self, port: int) -> None:
+	def __init__(self, game: 'Game', port: int) -> None:
+		self.game = game
+
 		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server: str = "127.0.0.1"
 		self.port: int = port
@@ -65,15 +70,25 @@ class Network:
 
 		match packetType:
 			case packetIDs.S2C_HANDSHAKE:
-				packet: S2CHandshake = S2CHandshake.decodeData(rawPacket)
+				handShakePacket: S2CHandshake = S2CHandshake.decodeData(rawPacket)
 
-				if not packet.isCorrect():
+				if not handShakePacket.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
 				
 			case packetIDs.S2C_HANDSHAKE_FAIL:
 				print("Server error during handshake. Aborting")
 				self.closeConnection()
+			
+			case packetIDs.S2C_PLAYERS:
+				playersPacket: S2CPlayers = S2CPlayers.decodeData(rawPacket)
+				
+				clientPlayers: list[Player] = []
+
+				for commonPlayer in playersPacket.players:
+					clientPlayers.append(Player.fromCommon(commonPlayer, self.game))
+				
+				self.game.players = clientPlayers
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
