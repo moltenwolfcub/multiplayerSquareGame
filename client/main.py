@@ -4,7 +4,7 @@ import sys
 import pygame
 
 from client.network import Network
-from client.player import Player
+from client.player import ClientPlayer
 from client.settings import Settings
 from common.c2sPackets import C2SRequestPlayerList
 
@@ -39,7 +39,7 @@ class Game:
 
 		# endregion
 
-		self.players: list[Player] = []
+		self.players: list[ClientPlayer] = []
 		self.network.send(C2SRequestPlayerList())
 
 		self.quit = False

@@ -3,7 +3,7 @@ import socket
 import sys
 from typing import TYPE_CHECKING, Optional
 
-from client.player import Player
+from client.player import ClientPlayer
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
@@ -83,10 +83,10 @@ class Network:
 			case packetIDs.S2C_PLAYERS:
 				playersPacket: S2CPlayers = S2CPlayers.decodeData(rawPacket)
 				
-				clientPlayers: list[Player] = []
+				clientPlayers: list[ClientPlayer] = []
 
 				for commonPlayer in playersPacket.players:
-					clientPlayers.append(Player.fromCommon(commonPlayer, self.game))
+					clientPlayers.append(ClientPlayer.fromCommon(commonPlayer, self.game))
 				
 				self.game.players = clientPlayers
 

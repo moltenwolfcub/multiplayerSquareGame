@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 
-import common.player
+from common.player import CommonPlayer
 
 if TYPE_CHECKING:
 	from client.main import Game
 
-class Player:
+class ClientPlayer:
 	'''General player for rendering local and remote players'''
 	
 	def __init__(self, game: 'Game', x: int, y: int) -> None:
@@ -26,5 +26,5 @@ class Player:
 		pygame.draw.rect(self.game.screen, (200, 20, 20), drawRect)
 	
 	@staticmethod
-	def fromCommon(common: common.player.Player, game: 'Game') -> 'Player':
-		return Player(game, common.pos[0], common.pos[1])
+	def fromCommon(common: CommonPlayer, game: 'Game') -> 'ClientPlayer':
+		return ClientPlayer(game, common.pos[0], common.pos[1])

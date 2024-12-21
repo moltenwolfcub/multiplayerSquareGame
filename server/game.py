@@ -1,9 +1,9 @@
 
-from common.player import Player
+from common.player import CommonPlayer
 
 
 class Game:
 	def __init__(self) -> None:
-		self.players: list[Player] = [
-			Player(100, 500)
+		self.players: list[CommonPlayer] = [
+			CommonPlayer(100, 500)
 		]

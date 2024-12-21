@@ -1,5 +1,5 @@
 
-class Player:
+class CommonPlayer:
 	ENCODED_SIZE: int = 4
 
 	def __init__(self, x: int = 0, y: int = 0) -> None:
@@ -13,9 +13,9 @@ class Player:
 		return b
 
 	@staticmethod
-	def decode(bytes: bytes) -> 'Player':
+	def decode(bytes: bytes) -> 'CommonPlayer':
 		x = int.from_bytes(bytes[:2])
 		y = int.from_bytes(bytes[2:])
 
-		return Player(x, y)
+		return CommonPlayer(x, y)
 
