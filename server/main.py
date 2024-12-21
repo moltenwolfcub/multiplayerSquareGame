@@ -24,6 +24,8 @@ class Server:
 		self.recievedPackets: queue.Queue[RawPacket] = queue.Queue()
 		self.quit: bool = False
 
+		self.openConnections: list[socket.socket] = []
+
 		self.game: GameData = GameData()
 
 	def start(self) -> None:
@@ -48,6 +50,8 @@ class Server:
 		'''Handles accepting new clients'''
 		while not self.quit:
 			conn, addr = self.socket.accept()
+			self.openConnections.append(conn)
+
 			print(f"Connecting to: {addr}")
 
 			_thread.start_new_thread(self.readLoop, (conn,))
@@ -71,6 +75,7 @@ class Server:
 				break
 		
 		print(f"Lost connection to peer: {conn.getpeername()}")
+		self.openConnections.remove(conn)
 		conn.close()
 	
 	def packetLoop(self) -> None:
@@ -83,13 +88,19 @@ class Server:
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
-			consoleInput: str = input().lower().strip()
+			self.game.update()
+			
+			for c in self.openConnections:
+				c.send(S2CPlayers(self.game.players).encode())
 
-			match consoleInput:
-				case "q" | "quit":
-					self.closeServer()
-				case _:
-					pass
+			time.sleep(0.1)
+			# consoleInput: str = input().lower().strip()
+
+			# match consoleInput:
+			# 	case "q" | "quit":
+			# 		self.closeServer()
+			# 	case _:
+			# 		pass
 
 
 	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
