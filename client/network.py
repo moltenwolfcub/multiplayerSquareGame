@@ -18,8 +18,6 @@ class Network:
 		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
 		self.quit: bool = False
 
-		self.connect()
-
 	def connect(self) -> None:
 		self.client.connect((self.server, self.port))
 		recieved = self.client.recv(8)
@@ -37,6 +35,9 @@ class Network:
 			sys.exit()
 
 		self.client.send(C2SHandshake().encode())
+	
+	def send(self, packet: Packet) -> None:
+		self.client.send(packet.encode())
 
 	def readLoop(self) -> None:
 		while not self.quit:
