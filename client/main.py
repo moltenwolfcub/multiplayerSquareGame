@@ -14,9 +14,9 @@ class Game:
 	def __init__(self, port: int) -> None:
 		pygame.init()
 
-		self.initialiseNetwork(port)
-
 		self.settings: Settings = Settings()
+		
+		self.initialiseNetwork(port)
 
 		# region SCREEN-SETUP
 

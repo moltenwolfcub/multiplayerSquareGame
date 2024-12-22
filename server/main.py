@@ -1,5 +1,6 @@
 import _thread
 import queue
+import random
 import socket
 import sys
 import time
@@ -8,6 +9,7 @@ from typing import Optional
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
+from common.player import CommonPlayer
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
 from server.gameData import GameData
 from server.rawPacket import RawPacket
@@ -51,7 +53,6 @@ class Server:
 		'''Handles accepting new clients'''
 		while not self.quit:
 			conn, addr = self.socket.accept()
-			self.openConnections.append(conn)
 
 			print(f"Connecting to: {addr}")
 
@@ -61,6 +62,8 @@ class Server:
 		'''One per client to store received packets for later processing'''
 		if self.initialHandshake(conn) is not None:
 			return
+		
+		self.openConnections.append(conn)
 
 		while not self.quit:
 			try:
@@ -111,6 +114,8 @@ class Server:
 		
 		print(f"Connection established to peer: {conn.getpeername()}")
 
+		self.onClientJoin(conn)
+
 	def closeServer(self) -> None:
 		self.quit = True
 	
@@ -120,14 +125,20 @@ class Server:
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
+	def onClientJoin(self, conn: socket.socket) -> None:
+		self.game.addPlayer(CommonPlayer(random.randint(0, 1500), random.randint(0, 800)))
+		# need to remove players on client disconnect
+
+		self.broadcast(S2CPlayers(self.game.players))
+
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
 			self.game.update()
 			
-			self.broadcast(S2CPlayers(self.game.players))
+			time.sleep(0.1) # if packets sent too fast, packets get combined and corrupted
 
-			time.sleep(0.1)
+			self.broadcast(S2CPlayers(self.game.players))
 
 	def consoleLoop(self) -> None:
 		'''Handles server console commands'''
