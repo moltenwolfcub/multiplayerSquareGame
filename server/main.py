@@ -71,16 +71,24 @@ class Server:
 			try:
 				rawPacket = self.recv(conn)
 				if rawPacket is None:
+					self.closeConnection(conn)
 					print("Disconnected")
 					break
 
 				self.recievedPackets.put(RawPacket(rawPacket, conn))
 
+			except ConnectionResetError:
+				self.closeConnection(conn)
+				print("Disconnected")
+				break
+
 			except:
+				self.closeConnection(conn)
+				print("Network Error")
 				break
 		
-		print(f"Lost connection to peer: {conn.getpeername()}")
-		self.closeConnection(conn)
+		# once players are properly linked to clients change to a client disconnect message
+		print(f"Lost connection to peer")
 	
 	def packetLoop(self) -> None:
 		'''Processes all recieved packets'''
@@ -132,7 +140,13 @@ class Server:
 
 	def broadcast(self, packet: Packet) -> None:
 		for c in self.openConnections:
-			PacketHeader.sendPacket(c, packet)
+			try:
+				PacketHeader.sendPacket(c, packet)
+			except OSError as e:
+				if e.errno == 9:
+					pass # client has disconnected but server hasn't caught up yet
+				else:
+					raise e
 	
 	def recv(self, conn: socket.socket) -> Optional[bytes]:
 		header = conn.recv(PacketHeader.HEADER_SIZE)
