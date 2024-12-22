@@ -37,6 +37,7 @@ class Server:
 		except socket.error as e:
 			print(e)
 			self.closeServer()
+			return
 		
 		self.socket.listen()
 		print(f"Server started on port {self.socket.getsockname()[1]}")
