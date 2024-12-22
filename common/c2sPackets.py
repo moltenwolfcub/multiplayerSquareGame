@@ -17,7 +17,7 @@ class C2SHandshake(Packet):
 	@override
 	@staticmethod
 	def decodeData(data: bytes) -> 'C2SHandshake':
-		packetData = data[1:]
+		packetData = data[packetIDs.packetIDSize:]
 
 		msg = packetData.decode("utf-8")
 		return C2SHandshake(msg)

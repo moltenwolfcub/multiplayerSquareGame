@@ -19,7 +19,7 @@ class S2CHandshake(Packet):
 	@override
 	@staticmethod
 	def decodeData(data: bytes) -> 'S2CHandshake':
-		packetData = data[1:]
+		packetData = data[packetIDs.packetIDSize:]
 
 		msg = packetData.decode("utf-8")
 		return S2CHandshake(msg)
@@ -59,7 +59,7 @@ class S2CPlayers(Packet):
 	@override
 	@staticmethod
 	def decodeData(data: bytes) -> 'S2CPlayers':
-		packetData = data[1:]
+		packetData = data[packetIDs.packetIDSize:]
 
 		playerList: list[CommonPlayer] = []
 

@@ -1,3 +1,4 @@
+packetIDSize = 1 # number of bytes a packetID takes up
 
 #C2S PACKETS
 C2S_HANDSHAKE = 0

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from common import packetIDs
+
 
 class Packet(ABC):
 	def __init__(self, id: int) -> None:
@@ -9,13 +11,13 @@ class Packet(ABC):
 		return self.id
 	
 	def encode(self) -> bytes:
-		encodedId = self.id.to_bytes(1)
+		encodedId = self.id.to_bytes(packetIDs.packetIDSize)
 		
 		return encodedId + self.encodeData()
 
 	@staticmethod
 	def decodeID(data: bytes) -> int:
-		return data[0]
+		return int.from_bytes(data[:packetIDs.packetIDSize])
 
 
 	@staticmethod
