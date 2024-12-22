@@ -80,8 +80,7 @@ class Server:
 				break
 		
 		print(f"Lost connection to peer: {conn.getpeername()}")
-		self.openConnections.remove(conn)
-		conn.close()
+		self.closeConnection(conn)
 	
 	def packetLoop(self) -> None:
 		'''Processes all recieved packets'''
@@ -96,21 +95,21 @@ class Server:
 			checkPacket = self.recv(conn)
 		except ConnectionResetError:
 			print(f"Error during response from closed peer.")
-			conn.close()
+			self.closeConnection(conn)
 			return ConnectionError()
 
 		if checkPacket is None:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
 			PacketHeader.sendPacket(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
-			conn.close()
+			self.closeConnection(conn)
 			return ConnectionError()
 		
 		if self.handlePacket(RawPacket(checkPacket, conn)) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
 			PacketHeader.sendPacket(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
-			conn.close()
+			self.closeConnection(conn)
 			return ConnectionError()
 		
 		print(f"Connection established to peer: {conn.getpeername()}")
@@ -119,7 +118,18 @@ class Server:
 
 	def closeServer(self) -> None:
 		self.quit = True
-	
+
+	def closeConnection(self, conn: socket.socket) -> None:
+		try:
+			conn.close()
+		except:
+			print("Error while closing connection")
+
+		try:
+			self.openConnections.remove(conn)
+		except ValueError:
+			pass # connection wasn't even in list yet so can't be removed
+
 	def broadcast(self, packet: Packet) -> None:
 		for c in self.openConnections:
 			PacketHeader.sendPacket(c, packet)
