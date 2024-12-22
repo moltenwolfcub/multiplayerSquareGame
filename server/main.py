@@ -113,6 +113,10 @@ class Server:
 
 	def closeServer(self) -> None:
 		self.quit = True
+	
+	def broadcast(self, packet: Packet) -> None:
+		for c in self.openConnections:
+			c.send(packet.encode())
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
@@ -121,8 +125,7 @@ class Server:
 		while not self.quit:
 			self.game.update()
 			
-			for c in self.openConnections:
-				c.send(S2CPlayers(self.game.players).encode())
+			self.broadcast(S2CPlayers(self.game.players))
 
 			time.sleep(0.1)
 
