@@ -7,6 +7,7 @@ from client.player import ClientPlayer
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
+from common.packetHeader import PacketHeader
 from common.s2cPackets import S2CHandshake, S2CPlayers
 
 if TYPE_CHECKING:
@@ -25,9 +26,9 @@ class Network:
 
 	def connect(self) -> None:
 		self.client.connect((self.server, self.port))
-		recieved = self.client.recv(8)
+		recieved = self.recv()
 
-		if not recieved:
+		if recieved is None:
 			print("No handshake sent from server")
 			self.closeConnection()
 		
@@ -39,25 +40,40 @@ class Network:
 		if self.quit:
 			sys.exit()
 
-		self.client.send(C2SHandshake().encode())
+		self.send(C2SHandshake())
 		print("Successfully established connection to server")
 	
 	def send(self, packet: Packet) -> None:
-		self.client.send(packet.encode())
+		PacketHeader.sendPacket(self.client, packet)
+
+	def recv(self) -> Optional[bytes]:
+		header = self.client.recv(PacketHeader.HEADER_SIZE)
+		if not header:
+			return None
+
+		packetSize = PacketHeader.getPacketsize(header)
+
+		rawPacket = self.client.recv(packetSize)
+		if not rawPacket:
+			return None
+		
+		return rawPacket
 
 	def readLoop(self) -> None:
 		while not self.quit:
 			try:
-				rawData = self.client.recv(2048)
+				rawPacket = self.recv()
 
-				if not rawData:
+				if rawPacket is None:
 					print("Disconnected")
 					self.closeConnection()
+					continue
 
-				self.recievedPackets.put(rawData)
+				self.recievedPackets.put(rawPacket)
 
 			except:
-				break
+				print("Network error")
+				self.closeConnection()
 
 	def packetLoop(self) -> None:
 		while not self.quit:

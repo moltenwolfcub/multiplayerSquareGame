@@ -9,6 +9,7 @@ from typing import Optional
 from common import packetIDs
 from common.c2sPackets import C2SHandshake
 from common.packetBase import Packet
+from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
 from server.gameData import GameData
@@ -67,13 +68,12 @@ class Server:
 
 		while not self.quit:
 			try:
-				rawData = conn.recv(2048)
-
-				if not rawData:
+				rawPacket = self.recv(conn)
+				if rawPacket is None:
 					print("Disconnected")
 					break
 
-				self.recievedPackets.put(RawPacket(rawData, conn))
+				self.recievedPackets.put(RawPacket(rawPacket, conn))
 
 			except:
 				break
@@ -90,24 +90,24 @@ class Server:
 			self.recievedPackets.task_done()
 
 	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
-		conn.send(S2CHandshake().encode())
+		PacketHeader.sendPacket(conn, S2CHandshake())
 		try:
-			checkPacket = conn.recv(8)
+			checkPacket = self.recv(conn)
 		except ConnectionResetError:
 			print(f"Error during response from closed peer.")
 			conn.close()
 			return ConnectionError()
 
-		if not checkPacket:
+		if checkPacket is None:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
-			conn.send(S2CFailedHandshake().encode())
+			PacketHeader.sendPacket(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
 			conn.close()
 			return ConnectionError()
 		
 		if self.handlePacket(RawPacket(checkPacket, conn)) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
-			conn.send(S2CFailedHandshake().encode())
+			PacketHeader.sendPacket(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
 			conn.close()
 			return ConnectionError()
@@ -121,7 +121,20 @@ class Server:
 	
 	def broadcast(self, packet: Packet) -> None:
 		for c in self.openConnections:
-			c.send(packet.encode())
+			PacketHeader.sendPacket(c, packet)
+	
+	def recv(self, conn: socket.socket) -> Optional[bytes]:
+		header = conn.recv(PacketHeader.HEADER_SIZE)
+		if not header:
+			return None
+
+		packetSize = PacketHeader.getPacketsize(header)
+
+		rawPacket = conn.recv(packetSize)
+		if not rawPacket:
+			return None
+		
+		return rawPacket
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
@@ -135,8 +148,6 @@ class Server:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
 			self.game.update()
-			
-			time.sleep(0.1) # if packets sent too fast, packets get combined and corrupted
 
 			self.broadcast(S2CPlayers(self.game.players))
 
@@ -163,7 +174,7 @@ class Server:
 					return ConnectionError()
 			
 			case packetIDs.C2S_PLAYER_REQUEST:
-				rawPacket.sender.send(S2CPlayers(self.game.players).encode())
+				PacketHeader.sendPacket(rawPacket.sender, S2CPlayers(self.game.players))
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
