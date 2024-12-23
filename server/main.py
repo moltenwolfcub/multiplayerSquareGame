@@ -65,7 +65,7 @@ class Server:
 		if self.initialHandshake(conn) is not None:
 			return
 		
-		self.openConnections.append(conn)
+		self.onClientJoin(conn)
 
 		while not self.quit:
 			try:
@@ -87,6 +87,7 @@ class Server:
 		
 		# once players are properly linked to clients change to a client disconnect message
 		print(f"Lost connection to peer")
+		self.onClientDisconnect(conn)
 	
 	def packetLoop(self) -> None:
 		'''Processes all recieved packets'''
@@ -120,8 +121,6 @@ class Server:
 		
 		print(f"Connection established to peer: {conn.getpeername()}")
 
-		self.onClientJoin(conn)
-
 	def closeServer(self) -> None:
 		self.quit = True
 
@@ -130,11 +129,6 @@ class Server:
 			conn.close()
 		except:
 			print("Error while closing connection")
-
-		try:
-			self.openConnections.remove(conn)
-		except ValueError:
-			pass # connection wasn't even in list yet so can't be removed
 
 	def broadcast(self, packet: Packet) -> None:
 		for c in self.openConnections:
@@ -164,10 +158,18 @@ class Server:
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
 	def onClientJoin(self, conn: socket.socket) -> None:
+		self.openConnections.append(conn)
+
 		self.game.addPlayer(CommonPlayer(random.randint(0, 1500), random.randint(0, 800)))
 		# need to remove players on client disconnect
 
 		self.broadcast(S2CPlayers(self.game.players))
+	
+	def onClientDisconnect(self, conn: socket.socket) -> None:
+		try:
+			self.openConnections.remove(conn)
+		except ValueError:
+			pass # connection wasn't even in list yet so can't be removed
 
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
