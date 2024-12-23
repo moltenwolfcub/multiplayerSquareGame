@@ -191,7 +191,15 @@ class Server:
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
+			tickStart = time.perf_counter_ns()
+
 			self.game.update()
+
+			tickStop = time.perf_counter_ns()
+			timeRemainingNS = self.game.settings.tickTimeNS - (tickStop-tickStart)
+
+			if timeRemainingNS > 0:
+				time.sleep(timeRemainingNS//1_000_000_000)
 
 	def consoleLoop(self) -> None:
 		'''Handles server console commands'''
