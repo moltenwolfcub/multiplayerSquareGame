@@ -1,10 +1,10 @@
 import unittest
 
-from common.c2sPackets import C2SMovementUpdate
+from common.c2sPackets import C2SHandshake, C2SMovementUpdate
 from common.dataTypes import Vec2D
 
 
-class packetTests(unittest.TestCase):
+class c2sPackets(unittest.TestCase):
 	"""Tests for packets"""
 
 	def testMovementPacket(self):
@@ -19,8 +19,14 @@ class packetTests(unittest.TestCase):
 		for p in packets:
 			with self.subTest(packet=packets[p]):
 				encoded = p.encode()
-				decoded = p.decodeData(encoded)
+				decoded = C2SMovementUpdate.decodeData(encoded)
 
 				self.assertEqual(decoded.movDir, p.movDir)
 
+	def testHandshakePacket(self):
+		packet = C2SHandshake("test")
 
+		encoded = packet.encode()
+		decoded = C2SHandshake.decodeData(encoded)
+
+		self.assertEqual(decoded.message, packet.message)
