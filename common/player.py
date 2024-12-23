@@ -2,7 +2,9 @@
 class CommonPlayer:
 	ENCODED_SIZE: int = 4
 
-	def __init__(self, x: int = 0, y: int = 0) -> None:
+	def __init__(self, id: int, x: int = 0, y: int = 0) -> None:
+
+		self.id = id
 
 		self.pos: tuple[int, int] = (x, y)
 

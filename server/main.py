@@ -165,15 +165,23 @@ class Server:
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
 	def onClientJoin(self, conn: socket.socket) -> None:
-		self.openConnections[conn] = self.getFreeID()
+		id = self.getFreeID()
+		self.openConnections[conn] = id
 
-		self.game.addPlayer(CommonPlayer(random.randint(0, 1500), random.randint(0, 800)))
+		self.game.addPlayer(CommonPlayer(id, random.randint(0, 1500), random.randint(0, 800)))
 		# need to remove players on client disconnect
 
 		self.broadcast(S2CPlayers(self.game.players))
 	
 	def onClientDisconnect(self, conn: socket.socket) -> None:
-		self.openConnections.pop(conn, None)
+		id = self.openConnections.pop(conn, None)
+
+		if id is None:
+			return # connection was never in list
+
+		self.game.removePlayer(id)
+
+		self.broadcast(S2CPlayers(self.game.players))
 
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''

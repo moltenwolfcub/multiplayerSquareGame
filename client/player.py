@@ -13,8 +13,6 @@ class ClientPlayer:
 	def __init__(self, game: 'Game', x: int, y: int) -> None:
 		self.game: Game = game
 
-		# self.id: int = id
-
 		self.pos: tuple[int, int] = (x, y)
 		
 		self.size: int = self.game.settings.playerSize
