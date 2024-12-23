@@ -186,10 +186,23 @@ class Server:
 			match consoleInput:
 				case "q" | "quit":
 					self.closeServer()
+					
 				case "p" | "players":
-					print(self.game.players)
+					print("PLAYERS:")
+					for p in self.game.players:
+						print(f"- {p}")
+
+					if len(self.game.players) == 0:
+						print("empty")
+
 				case "c" | "connections":
-					print(self.openConnections)
+					print("CONNECTIONS:")
+					for c in self.openConnections:
+						print(f"- {c}")
+
+					if len(self.game.players) == 0:
+						print("empty")
+
 				case _:
 					pass
 

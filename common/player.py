@@ -18,4 +18,7 @@ class CommonPlayer:
 		y = int.from_bytes(bytes[2:])
 
 		return CommonPlayer(x, y)
+	
+	def __str__(self) -> str:
+		return f"Player[pos={self.pos}]"
 
