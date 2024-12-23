@@ -7,7 +7,7 @@ import time
 from typing import Optional
 
 from common import packetIDs
-from common.c2sPackets import C2SHandshake
+from common.c2sPackets import C2SHandshake, C2SMovementUpdate
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
@@ -232,6 +232,24 @@ class Server:
 			
 			case packetIDs.C2S_PLAYER_REQUEST:
 				PacketHeader.sendPacket(rawPacket.sender, S2CPlayers(self.game.players))
+			
+			case packetIDs.C2S_MOVEMENT_UPDATE:
+				movementPacket: C2SMovementUpdate = C2SMovementUpdate.decodeData(rawPacket.data)
+
+				player = self.game.getPlayer(self.openConnections[rawPacket.sender])
+				if player is None:
+					print(f"Error! No player assosiated with connection: {rawPacket.sender}")
+					return LookupError()
+			
+				newX = movementPacket.dx * self.game.settings.playerSpeed
+				newY = movementPacket.dy * self.game.settings.playerSpeed
+
+				print(f"{movementPacket.dx}, {movementPacket.dy}")
+
+				player.x += min(self.game.settings.worldWidth, max(0, newX))
+				player.y += min(self.game.settings.worldHeight, max(0, newY))
+
+				self.broadcast(S2CPlayers(self.game.players))
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")

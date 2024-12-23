@@ -3,6 +3,7 @@ import sys
 
 import pygame
 
+from client import keybinds
 from client.network import Network
 from client.player import ClientPlayer
 from client.settings import Settings
@@ -42,6 +43,8 @@ class Game:
 		self.players: list[ClientPlayer] = []
 		self.network.send(C2SRequestPlayerList())
 
+		self.movementCodes: list[int] = [0, 0, 0, 0]
+
 		self.quit = False
 
 	def initialiseNetwork(self, port: int) -> None:
@@ -55,6 +58,7 @@ class Game:
 	def run(self) -> None:
 		while not self.quit:
 			self._checkEvents()
+			self.network.sendUpdates()
 			self._updateScreen()
 
 		sys.exit()
@@ -95,11 +99,35 @@ class Game:
 				self._resizeScreen(event)
 				   
 	def _checkKeydownEvents(self, event: pygame.event.Event) -> None:
-		if event.key == pygame.K_ESCAPE:
-			self.exitGame()
+		match event.key:
+			case keybinds.EXIT:
+				self.exitGame()
+
+			case keybinds.MOV_UP:
+				self.movementCodes[0] = 1
+			case keybinds.MOV_DOWN:
+				self.movementCodes[1] = 1
+			case keybinds.MOV_LEFT:
+				self.movementCodes[2] = 1
+			case keybinds.MOV_RIGHT:
+				self.movementCodes[3] = 1
+
+			case _:
+				pass
 
 	def _checkKeyupEvents(self, event: pygame.event.Event) -> None:
-		pass
+		match event.key:
+			case keybinds.MOV_UP:
+				self.movementCodes[0] = 0
+			case keybinds.MOV_DOWN:
+				self.movementCodes[1] = 0
+			case keybinds.MOV_LEFT:
+				self.movementCodes[2] = 0
+			case keybinds.MOV_RIGHT:
+				self.movementCodes[3] = 0
+
+			case _:
+				pass
 	
 	def _resizeScreen(self, event: pygame.event.Event) -> None:
 		newX, newY = event.x, event.y

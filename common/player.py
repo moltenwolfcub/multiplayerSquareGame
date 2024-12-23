@@ -6,11 +6,12 @@ class CommonPlayer:
 
 		self.id = id
 
-		self.pos: tuple[int, int] = (x, y)
+		self.x: int = x
+		self.y: int = y
 
 	def encode(self) -> bytes:
-		b = self.pos[0].to_bytes(2)
-		b += self.pos[1].to_bytes(2)
+		b = self.x.to_bytes(2)
+		b += self.y.to_bytes(2)
 
 		return b
 
@@ -19,8 +20,8 @@ class CommonPlayer:
 		x = int.from_bytes(bytes[:2])
 		y = int.from_bytes(bytes[2:])
 
-		return CommonPlayer(x, y)
+		return CommonPlayer(-1, x, y)
 	
 	def __str__(self) -> str:
-		return f"Player[pos={self.pos}]"
+		return f"Player[id= {self.id}, pos=({self.x}, {self.y})]"
 

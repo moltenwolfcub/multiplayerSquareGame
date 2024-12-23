@@ -25,4 +25,7 @@ class ClientPlayer:
 	
 	@staticmethod
 	def fromCommon(common: CommonPlayer, game: 'Game') -> 'ClientPlayer':
-		return ClientPlayer(game, common.pos[0], common.pos[1])
+		return ClientPlayer(game, common.x, common.y)
+
+	def __str__(self) -> str:
+		return f"Player[pos=({self.pos})]"

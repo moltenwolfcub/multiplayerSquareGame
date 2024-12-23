@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 from client.player import ClientPlayer
 from common import packetIDs
-from common.c2sPackets import C2SHandshake
+from common.c2sPackets import C2SHandshake, C2SMovementUpdate
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.s2cPackets import S2CHandshake, S2CPlayers
@@ -124,7 +124,18 @@ class Network:
 					clientPlayers.append(ClientPlayer.fromCommon(commonPlayer, self.game))
 				
 				self.game.players = clientPlayers
+				
+				print("PLAYERS")
+				for p in playersPacket.players:
+					print(f"- {p}")
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
+	
+	def sendUpdates(self) -> None:
+		
+		if any(self.game.movementCodes):
+			dx = self.game.movementCodes[3] - self.game.movementCodes[2]
+			dy = self.game.movementCodes[1] - self.game.movementCodes[0]
+			self.send(C2SMovementUpdate(dx,dy))
