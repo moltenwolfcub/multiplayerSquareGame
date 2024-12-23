@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 
 @dataclass
@@ -50,3 +50,12 @@ class Vec2D:
 			math.ceil(newX),
 			math.ceil(newY)
 		)
+
+@dataclass
+class Color:
+	r: int
+	g: int
+	b: int
+
+	def toTuple(self) -> tuple[int,int,int]:
+		return (self.r, self.g, self.b)

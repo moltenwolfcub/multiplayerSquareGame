@@ -8,7 +8,7 @@ from typing import Optional
 
 from common import packetIDs
 from common.c2sPackets import C2SHandshake, C2SMovementUpdate
-from common.dataTypes import Vec2D
+from common.dataTypes import Color, Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
@@ -172,8 +172,12 @@ class Server:
 
 		self.game.addPlayer(CommonPlayer(
 			id,
-			Vec2D(random.randint(0, 1500), random.randint(0, 800)),
-			Vec2D(0,0)
+			Vec2D(
+				random.randint(0, self.game.settings.worldWidth-self.game.settings.playerSize),
+				random.randint(0, self.game.settings.worldHeight-self.game.settings.playerSize)
+			),
+			Vec2D(0,0),
+			Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 		))
 
 		self.broadcast(S2CPlayers(self.game.players))

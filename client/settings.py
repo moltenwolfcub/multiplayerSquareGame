@@ -1,5 +1,6 @@
 
-type color = tuple[int,int,int]
+from common.dataTypes import Color
+
 
 class Settings:
 
@@ -12,8 +13,8 @@ class Settings:
 		self.screenAspectRatio: float = self.screenWidth / self.screenHeight
 
 		# colors
-		self.colorScreenOverflow: color = (0, 0, 0)
-		self.colorBg: color = (63, 63, 63)
+		self.colorScreenOverflow: Color = Color(0, 0, 0)
+		self.colorBg: Color = Color(63, 63, 63)
 
 		# player
 		self.playerSize: int = 100

@@ -78,12 +78,12 @@ class Game:
 			)
 
 
-		self.screen.fill(self.settings.colorBg)
+		self.screen.fill(self.settings.colorBg.toTuple())
 
 		for player in self.players:
 			player.draw(scaler)
 
-		self.physicalScreen.fill(self.settings.colorScreenOverflow)
+		self.physicalScreen.fill(self.settings.colorScreenOverflow.toTuple())
 		self.physicalScreen.blit(self.screen, self.screenOffset)
 		pygame.display.flip()
 
