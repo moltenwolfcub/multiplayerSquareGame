@@ -67,13 +67,22 @@ class Network:
 				if rawPacket is None:
 					print("Disconnected")
 					self.closeConnection()
-					continue
+					break
 
 				self.recievedPackets.put(rawPacket)
 
-			except:
-				print("Network error")
+			except OSError as e:
+				if e.errno == 9:
+					print("Disconnected")
+					self.closeConnection()
+					break
+				else:
+					raise e
+
+			except Exception as e:
+				print("Network Error: ", e)
 				self.closeConnection()
+				break
 
 	def packetLoop(self) -> None:
 		while not self.quit:

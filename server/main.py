@@ -82,9 +82,9 @@ class Server:
 				print("Disconnected")
 				break
 
-			except:
+			except Exception as e:
 				self.closeConnection(conn)
-				print("Network Error")
+				print("Network Error: ", e)
 				break
 		
 		# once players are properly linked to clients change to a client disconnect message
