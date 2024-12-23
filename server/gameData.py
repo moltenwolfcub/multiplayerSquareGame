@@ -24,7 +24,12 @@ class GameData:
 				continue
 			
 			playersDirty = True
-			newPos: Vec2D = player.pos + player.movDir * self.settings.playerSpeed
+			velocity: Vec2D = player.movDir * self.settings.playerSpeed
+
+			if player.movDir.x and player.movDir.y:
+				velocity = velocity / 1.2
+
+			newPos = player.pos + velocity
 
 			player.pos.x = min(self.settings.worldWidth  - self.settings.playerSize, max(0, newPos.x))
 			player.pos.y = min(self.settings.worldHeight - self.settings.playerSize, max(0, newPos.y))
