@@ -8,6 +8,7 @@ from typing import Optional
 
 from common import packetIDs
 from common.c2sPackets import C2SHandshake, C2SMovementUpdate
+from common.dataTypes import Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
@@ -168,7 +169,7 @@ class Server:
 		id = self.getFreeID()
 		self.openConnections[conn] = id
 
-		self.game.addPlayer(CommonPlayer(id, random.randint(0, 1500), random.randint(0, 800)))
+		self.game.addPlayer(CommonPlayer(id, Vec2D(random.randint(0, 1500), random.randint(0, 800))))
 		# need to remove players on client disconnect
 
 		self.broadcast(S2CPlayers(self.game.players))
@@ -241,13 +242,10 @@ class Server:
 					print(f"Error! No player assosiated with connection: {rawPacket.sender}")
 					return LookupError()
 			
-				newX = movementPacket.dx * self.game.settings.playerSpeed
-				newY = movementPacket.dy * self.game.settings.playerSpeed
+				newPos: Vec2D = player.pos + movementPacket.velocity * self.game.settings.playerSpeed
 
-				print(f"{movementPacket.dx}, {movementPacket.dy}")
-
-				player.x += min(self.game.settings.worldWidth, max(0, newX))
-				player.y += min(self.game.settings.worldHeight, max(0, newY))
+				player.pos.x += min(self.game.settings.worldWidth, max(0, newPos.x))
+				player.pos.y += min(self.game.settings.worldHeight, max(0, newPos.y))
 
 				self.broadcast(S2CPlayers(self.game.players))
 

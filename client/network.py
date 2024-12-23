@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from client.player import ClientPlayer
 from common import packetIDs
 from common.c2sPackets import C2SHandshake, C2SMovementUpdate
+from common.dataTypes import Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.s2cPackets import S2CHandshake, S2CPlayers
@@ -138,4 +139,4 @@ class Network:
 		if any(self.game.movementCodes):
 			dx = self.game.movementCodes[3] - self.game.movementCodes[2]
 			dy = self.game.movementCodes[1] - self.game.movementCodes[0]
-			self.send(C2SMovementUpdate(dx,dy))
+			self.send(C2SMovementUpdate(Vec2D(dx,dy)))
