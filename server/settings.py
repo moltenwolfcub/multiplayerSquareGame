@@ -8,4 +8,5 @@ class Settings:
 		self.worldHeight: int = 900
 
 		# player
-		self.playerSpeed: int = 3
+		self.playerSize: int = 100
+		self.playerSpeed: int = 1

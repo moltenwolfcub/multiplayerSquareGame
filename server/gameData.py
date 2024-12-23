@@ -26,8 +26,8 @@ class GameData:
 			playersDirty = True
 			newPos: Vec2D = player.pos + player.movDir * self.settings.playerSpeed
 
-			player.pos.x = min(self.settings.worldWidth, max(0, newPos.x))
-			player.pos.y = min(self.settings.worldHeight, max(0, newPos.y))
+			player.pos.x = min(self.settings.worldWidth  - self.settings.playerSize, max(0, newPos.x))
+			player.pos.y = min(self.settings.worldHeight - self.settings.playerSize, max(0, newPos.y))
 
 		if playersDirty:
 			self.server.broadcast(S2CPlayers(self.players))
