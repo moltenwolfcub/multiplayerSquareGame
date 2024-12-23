@@ -44,6 +44,7 @@ class Game:
 		self.network.send(C2SRequestPlayerList())
 
 		self.movementCodes: list[int] = [0, 0, 0, 0]
+		self.movementCodesDirty: bool = False
 
 		self.quit = False
 
@@ -105,12 +106,16 @@ class Game:
 
 			case keybinds.MOV_UP:
 				self.movementCodes[0] = 1
+				self.movementCodesDirty = True
 			case keybinds.MOV_DOWN:
 				self.movementCodes[1] = 1
+				self.movementCodesDirty = True
 			case keybinds.MOV_LEFT:
 				self.movementCodes[2] = 1
+				self.movementCodesDirty = True
 			case keybinds.MOV_RIGHT:
 				self.movementCodes[3] = 1
+				self.movementCodesDirty = True
 
 			case _:
 				pass
@@ -119,12 +124,16 @@ class Game:
 		match event.key:
 			case keybinds.MOV_UP:
 				self.movementCodes[0] = 0
+				self.movementCodesDirty = True
 			case keybinds.MOV_DOWN:
 				self.movementCodes[1] = 0
+				self.movementCodesDirty = True
 			case keybinds.MOV_LEFT:
 				self.movementCodes[2] = 0
+				self.movementCodesDirty = True
 			case keybinds.MOV_RIGHT:
 				self.movementCodes[3] = 0
+				self.movementCodesDirty = True
 
 			case _:
 				pass

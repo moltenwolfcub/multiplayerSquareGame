@@ -13,6 +13,7 @@ from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
+from common.util import printBytes
 from server.gameData import GameData
 from server.rawPacket import RawPacket
 
@@ -30,7 +31,7 @@ class Server:
 
 		self.openConnections: dict[socket.socket, int] = {}
 
-		self.game: GameData = GameData()
+		self.game: GameData = GameData(self)
 
 	def start(self) -> None:
 		try:
@@ -161,6 +162,7 @@ class Server:
 		if not rawPacket:
 			return None
 		
+		# printBytes(rawPacket)
 		return rawPacket
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
@@ -169,8 +171,11 @@ class Server:
 		id = self.getFreeID()
 		self.openConnections[conn] = id
 
-		self.game.addPlayer(CommonPlayer(id, Vec2D(random.randint(0, 1500), random.randint(0, 800))))
-		# need to remove players on client disconnect
+		self.game.addPlayer(CommonPlayer(
+			id,
+			Vec2D(random.randint(0, 1500), random.randint(0, 800)),
+			Vec2D(0,0)
+		))
 
 		self.broadcast(S2CPlayers(self.game.players))
 	
@@ -188,8 +193,6 @@ class Server:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
 			self.game.update()
-
-			# self.broadcast(S2CPlayers(self.game.players))
 
 	def consoleLoop(self) -> None:
 		'''Handles server console commands'''
@@ -241,13 +244,8 @@ class Server:
 				if player is None:
 					print(f"Error! No player assosiated with connection: {rawPacket.sender}")
 					return LookupError()
-			
-				newPos: Vec2D = player.pos + movementPacket.velocity * self.game.settings.playerSpeed
-
-				player.pos.x += min(self.game.settings.worldWidth, max(0, newPos.x))
-				player.pos.y += min(self.game.settings.worldHeight, max(0, newPos.y))
-
-				self.broadcast(S2CPlayers(self.game.players))
+				
+				player.movDir = movementPacket.movDir
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")

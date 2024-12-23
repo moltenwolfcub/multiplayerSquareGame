@@ -20,3 +20,6 @@ class Vec2D:
 			self.x + other.x,
 			self.y + other.y
 		)
+	
+	def isNone(self) -> bool:
+		return self.x == 0 and self.y == 0

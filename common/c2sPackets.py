@@ -40,16 +40,16 @@ class C2SRequestPlayerList(Packet):
 		return C2SRequestPlayerList()
 
 class C2SMovementUpdate(Packet):
-	def __init__(self, velocity: Vec2D) -> None:
+	def __init__(self, movDir: Vec2D) -> None:
 		super().__init__(packetIDs.C2S_MOVEMENT_UPDATE)
 
-		self.velocity = velocity
+		self.movDir = movDir
 	
 	@override
 	def encodeData(self) -> bytes:
 		# 2 bits for each delta. b'0000xxyy'
 		bdx: int = 0
-		match self.velocity.x:
+		match self.movDir.x:
 			case 0:
 				bdx = 0b00
 			case 1:
@@ -57,18 +57,18 @@ class C2SMovementUpdate(Packet):
 			case -1:
 				bdx = 0b10
 			case _:
-				print(f"error encoding movement bytes. unknown velocity x-value {self.velocity.x}")
+				print(f"error encoding movement bytes. unknown movement Direction x-value {self.movDir.x}")
 
 		bdy: int = 0
-		match self.velocity.y:
+		match self.movDir.y:
 			case 0:
-				bdx = 0b00
+				bdy = 0b00
 			case 1:
-				bdx = 0b01
+				bdy = 0b01
 			case -1:
-				bdx = 0b10
+				bdy = 0b10
 			case _:
-				print(f"error encoding movement bytes. unknown velocity y-value {self.velocity.y}")
+				print(f"error encoding movement bytes. unknown movement Direction y-value {self.movDir.y}")
 		
 		encoded = (bdx << 2) + bdy
 		return encoded.to_bytes(1)
@@ -91,7 +91,7 @@ class C2SMovementUpdate(Packet):
 			case 0b10:
 				dx = -1
 			case _:
-				print(f"error decoding movement bytes. unknown velocity x-value {packedDx}")
+				print(f"error decoding movement bytes. unknown movement Direction x-value {packedDx}")
 
 		dy = 0
 		match packedDy:
@@ -102,6 +102,6 @@ class C2SMovementUpdate(Packet):
 			case 0b10:
 				dy = -1
 			case _:
-				print(f"error decoding movement bytes. unknown velocity y-value {packedDy}")
+				print(f"error decoding movement bytes. unknown movement Direction y-value {packedDy}")
 		
 		return C2SMovementUpdate(Vec2D(dx,dy))

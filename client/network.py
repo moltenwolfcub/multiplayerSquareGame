@@ -45,6 +45,7 @@ class Network:
 		print("Successfully established connection to server")
 	
 	def send(self, packet: Packet) -> None:
+		# print(packet.encode())
 		PacketHeader.sendPacket(self.client, packet)
 
 	def recv(self) -> Optional[bytes]:
@@ -126,17 +127,18 @@ class Network:
 				
 				self.game.players = clientPlayers
 				
-				print("PLAYERS")
-				for p in playersPacket.players:
-					print(f"- {p}")
+				# print("PLAYERS")
+				# for p in playersPacket.players:
+				# 	print(f"- {p}")
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
 	
 	def sendUpdates(self) -> None:
-		
-		if any(self.game.movementCodes):
+		if self.game.movementCodesDirty:
 			dx = self.game.movementCodes[3] - self.game.movementCodes[2]
 			dy = self.game.movementCodes[1] - self.game.movementCodes[0]
 			self.send(C2SMovementUpdate(Vec2D(dx,dy)))
+
+			self.game.movementCodesDirty = False
