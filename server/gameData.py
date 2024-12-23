@@ -1,6 +1,7 @@
+import random
 from typing import TYPE_CHECKING, Optional
 
-from common.dataTypes import Vec2D
+from common.dataTypes import Color, Vec2D
 from common.player import CommonPlayer
 from common.s2cPackets import S2CPlayers
 from server.settings import Settings
@@ -31,14 +32,25 @@ class GameData:
 
 			newPos = player.pos + velocity
 
-			player.pos.x = min(self.settings.worldWidth  - self.settings.playerSize, max(0, newPos.x))
-			player.pos.y = min(self.settings.worldHeight - self.settings.playerSize, max(0, newPos.y))
+			player.pos.x = min(self.settings.worldWidth  - self.settings.playerRadius, max(self.settings.playerRadius, newPos.x))
+			player.pos.y = min(self.settings.worldHeight - self.settings.playerRadius, max(self.settings.playerRadius, newPos.y))
 
 		if playersDirty:
 			self.server.broadcast(S2CPlayers(self.players))
 
 	def addPlayer(self, player: CommonPlayer) -> None:
 		self.players.append(player)
+	
+	def addRandomPlayer(self, id: int) -> None:
+		self.addPlayer(CommonPlayer(
+			id,
+			Vec2D(
+				random.randint(self.settings.playerRadius, self.settings.worldWidth-self.settings.playerRadius),
+				random.randint(self.settings.playerRadius, self.settings.worldHeight-self.settings.playerRadius)
+			),
+			Vec2D(0,0),
+			Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+		))
 	
 	def removePlayer(self, playerId: int) -> None:
 		player = self.getPlayer(playerId)

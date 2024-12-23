@@ -1,6 +1,5 @@
 import _thread
 import queue
-import random
 import socket
 import sys
 import time
@@ -8,10 +7,8 @@ from typing import Optional
 
 from common import packetIDs
 from common.c2sPackets import C2SHandshake, C2SMovementUpdate
-from common.dataTypes import Color, Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
-from common.player import CommonPlayer
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
 from server.gameData import GameData
 from server.rawPacket import RawPacket
@@ -170,15 +167,7 @@ class Server:
 		id = self.getFreeID()
 		self.openConnections[conn] = id
 
-		self.game.addPlayer(CommonPlayer(
-			id,
-			Vec2D(
-				random.randint(0, self.game.settings.worldWidth-self.game.settings.playerSize),
-				random.randint(0, self.game.settings.worldHeight-self.game.settings.playerSize)
-			),
-			Vec2D(0,0),
-			Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-		))
+		self.game.addRandomPlayer(id)
 
 		self.broadcast(S2CPlayers(self.game.players))
 	

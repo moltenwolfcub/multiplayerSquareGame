@@ -18,8 +18,8 @@ class ClientPlayer:
 
 		self.color: Color = color
 		
-		self.size: int = self.game.settings.playerSize
-		self.rect = pygame.Rect(self.pos.x, self.pos.y, self.size, self.size)
+		self.radius: int = self.game.settings.playerRadius
+		self.rect = pygame.Rect(self.pos.x-self.radius, self.pos.y-self.radius, self.radius*2, self.radius*2)
 
 	def draw(self, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
 		drawRect = scaler(self.rect)

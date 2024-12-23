@@ -17,4 +17,4 @@ class Settings:
 		self.colorBg: Color = Color(63, 63, 63)
 
 		# player
-		self.playerSize: int = 100
+		self.playerRadius: int = 50
