@@ -72,14 +72,12 @@ class Server:
 				rawPacket = self.recv(conn)
 				if rawPacket is None:
 					self.closeConnection(conn)
-					print("Disconnected")
 					break
 
 				self.recievedPackets.put(RawPacket(rawPacket, conn))
 
 			except ConnectionResetError:
 				self.closeConnection(conn)
-				print("Disconnected")
 				break
 
 			except Exception as e:
@@ -142,6 +140,8 @@ class Server:
 		for c in self.openConnections:
 			try:
 				PacketHeader.sendPacket(c, packet)
+			except BrokenPipeError:
+				pass
 			except OSError as e:
 				if e.errno == 9:
 					pass # client has disconnected but server hasn't caught up yet
