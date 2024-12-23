@@ -186,6 +186,10 @@ class Server:
 			match consoleInput:
 				case "q" | "quit":
 					self.closeServer()
+				case "p" | "players":
+					print(self.game.players)
+				case "c" | "connections":
+					print(self.openConnections)
 				case _:
 					pass
 
