@@ -79,8 +79,8 @@ class C2SMovementUpdate(Packet):
 		packetData = data[packetIDs.packetIDSize:]
 
 		packedDeltas = int.from_bytes(packetData)
-		packedDy = packedDeltas >> 2
-		packedDx = packedDeltas & 0b0011
+		packedDx = packedDeltas >> 2
+		packedDy = packedDeltas & 0b0011
 
 		dx = 0
 		match packedDx:
