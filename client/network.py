@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Optional
 
 from client.player import ClientPlayer
 from common import packetIDs
-from common.c2sPackets import C2SHandshake
+from common.c2sPackets import C2SHandshake, C2SMovementUpdate
+from common.dataTypes import Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.s2cPackets import S2CHandshake, S2CPlayers
@@ -44,6 +45,7 @@ class Network:
 		print("Successfully established connection to server")
 	
 	def send(self, packet: Packet) -> None:
+		# print(packet.encode())
 		PacketHeader.sendPacket(self.client, packet)
 
 	def recv(self) -> Optional[bytes]:
@@ -124,7 +126,19 @@ class Network:
 					clientPlayers.append(ClientPlayer.fromCommon(commonPlayer, self.game))
 				
 				self.game.players = clientPlayers
+				
+				# print("PLAYERS")
+				# for p in playersPacket.players:
+				# 	print(f"- {p}")
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")
 				return ConnectionError()
+	
+	def sendUpdates(self) -> None:
+		if self.game.movementCodesDirty:
+			dx = self.game.movementCodes[3] - self.game.movementCodes[2]
+			dy = self.game.movementCodes[1] - self.game.movementCodes[0]
+			self.send(C2SMovementUpdate(Vec2D(dx,dy)))
+
+			self.game.movementCodesDirty = False

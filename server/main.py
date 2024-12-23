@@ -7,7 +7,8 @@ import time
 from typing import Optional
 
 from common import packetIDs
-from common.c2sPackets import C2SHandshake
+from common.c2sPackets import C2SHandshake, C2SMovementUpdate
+from common.dataTypes import Vec2D
 from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
@@ -29,7 +30,7 @@ class Server:
 
 		self.openConnections: dict[socket.socket, int] = {}
 
-		self.game: GameData = GameData()
+		self.game: GameData = GameData(self)
 
 	def start(self) -> None:
 		try:
@@ -160,6 +161,7 @@ class Server:
 		if not rawPacket:
 			return None
 		
+		# printBytes(rawPacket)
 		return rawPacket
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
@@ -168,8 +170,11 @@ class Server:
 		id = self.getFreeID()
 		self.openConnections[conn] = id
 
-		self.game.addPlayer(CommonPlayer(id, random.randint(0, 1500), random.randint(0, 800)))
-		# need to remove players on client disconnect
+		self.game.addPlayer(CommonPlayer(
+			id,
+			Vec2D(random.randint(0, 1500), random.randint(0, 800)),
+			Vec2D(0,0)
+		))
 
 		self.broadcast(S2CPlayers(self.game.players))
 	
@@ -187,8 +192,6 @@ class Server:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
 			self.game.update()
-
-			# self.broadcast(S2CPlayers(self.game.players))
 
 	def consoleLoop(self) -> None:
 		'''Handles server console commands'''
@@ -232,6 +235,16 @@ class Server:
 			
 			case packetIDs.C2S_PLAYER_REQUEST:
 				PacketHeader.sendPacket(rawPacket.sender, S2CPlayers(self.game.players))
+			
+			case packetIDs.C2S_MOVEMENT_UPDATE:
+				movementPacket: C2SMovementUpdate = C2SMovementUpdate.decodeData(rawPacket.data)
+
+				player = self.game.getPlayer(self.openConnections[rawPacket.sender])
+				if player is None:
+					print(f"Error! No player assosiated with connection: {rawPacket.sender}")
+					return LookupError()
+				
+				player.movDir = movementPacket.movDir
 
 			case _:
 				print(f"Unknown packet (ID: {packetType})")

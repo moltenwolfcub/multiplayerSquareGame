@@ -1,16 +1,20 @@
 
+from common.dataTypes import Vec2D
+
+
 class CommonPlayer:
 	ENCODED_SIZE: int = 4
 
-	def __init__(self, id: int, x: int = 0, y: int = 0) -> None:
+	def __init__(self, id: int, pos: Vec2D, movDir: Vec2D) -> None:
 
 		self.id = id
 
-		self.pos: tuple[int, int] = (x, y)
+		self.pos = pos
+		self.movDir = movDir # 1, 0, -1
 
 	def encode(self) -> bytes:
-		b = self.pos[0].to_bytes(2)
-		b += self.pos[1].to_bytes(2)
+		b = self.pos.x.to_bytes(2)
+		b += self.pos.y.to_bytes(2)
 
 		return b
 
@@ -19,8 +23,8 @@ class CommonPlayer:
 		x = int.from_bytes(bytes[:2])
 		y = int.from_bytes(bytes[2:])
 
-		return CommonPlayer(x, y)
+		return CommonPlayer(id=-1, pos=Vec2D(x, y), movDir= Vec2D(0,0))
 	
 	def __str__(self) -> str:
-		return f"Player[pos={self.pos}]"
+		return f"Player[id= {self.id}, pos= {self.pos}, movDir= {self.movDir}]"
 
