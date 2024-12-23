@@ -27,7 +27,7 @@ class Server:
 		self.recievedPackets: queue.Queue[RawPacket] = queue.Queue()
 		self.quit: bool = False
 
-		self.openConnections: list[socket.socket] = []
+		self.openConnections: dict[socket.socket, int] = {}
 
 		self.game: GameData = GameData()
 
@@ -129,6 +129,13 @@ class Server:
 			conn.close()
 		except:
 			print("Error while closing connection")
+		
+	def getFreeID(self) -> int:
+		id = 0
+		while True:
+			if list(self.openConnections.values()).count(id) == 0:
+				return id
+			id += 1
 
 	def broadcast(self, packet: Packet) -> None:
 		for c in self.openConnections:
@@ -158,7 +165,7 @@ class Server:
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
 	def onClientJoin(self, conn: socket.socket) -> None:
-		self.openConnections.append(conn)
+		self.openConnections[conn] = self.getFreeID()
 
 		self.game.addPlayer(CommonPlayer(random.randint(0, 1500), random.randint(0, 800)))
 		# need to remove players on client disconnect
@@ -166,17 +173,14 @@ class Server:
 		self.broadcast(S2CPlayers(self.game.players))
 	
 	def onClientDisconnect(self, conn: socket.socket) -> None:
-		try:
-			self.openConnections.remove(conn)
-		except ValueError:
-			pass # connection wasn't even in list yet so can't be removed
+		self.openConnections.pop(conn, None)
 
 	def mainLoop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
 			self.game.update()
 
-			self.broadcast(S2CPlayers(self.game.players))
+			# self.broadcast(S2CPlayers(self.game.players))
 
 	def consoleLoop(self) -> None:
 		'''Handles server console commands'''
@@ -186,7 +190,7 @@ class Server:
 			match consoleInput:
 				case "q" | "quit":
 					self.closeServer()
-					
+
 				case "p" | "players":
 					print("PLAYERS:")
 					for p in self.game.players:
@@ -198,7 +202,8 @@ class Server:
 				case "c" | "connections":
 					print("CONNECTIONS:")
 					for c in self.openConnections:
-						print(f"- {c}")
+						id = self.openConnections[c]
+						print(f"- {id}: {c}")
 
 					if len(self.game.players) == 0:
 						print("empty")
