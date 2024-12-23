@@ -13,7 +13,6 @@ from common.packetBase import Packet
 from common.packetHeader import PacketHeader
 from common.player import CommonPlayer
 from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
-from common.util import printBytes
 from server.gameData import GameData
 from server.rawPacket import RawPacket
 
