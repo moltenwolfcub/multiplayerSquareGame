@@ -30,4 +30,4 @@ class s2cPackets(unittest.TestCase):
 			expected = packet.players[i]
 			actual = decoded.players[i]
 
-			self.assertEqual(actual.pos, expected.pos)
+			self.assertEqual(actual, expected)

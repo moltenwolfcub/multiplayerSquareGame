@@ -27,4 +27,12 @@ class CommonPlayer:
 	
 	def __str__(self) -> str:
 		return f"Player[id= {self.id}, pos= {self.pos}, movDir= {self.movDir}]"
+	
+	def __eq__(self, value: object) -> bool:
+		if not isinstance(value, CommonPlayer):
+			return False
 
+		if value.pos != self.pos:
+			return False
+		
+		return True
