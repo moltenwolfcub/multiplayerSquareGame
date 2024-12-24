@@ -10,7 +10,7 @@ from common.bullet import CommonBullet
 from common.c2s_packets import C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CFailedHandshake, S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers
 from server.game_data import GameData
 from server.raw_packet import RawPacket
 
@@ -264,6 +264,8 @@ class Server:
 
                 print(f"Pow from {shooting_player.pos}")
                 self.game.bullets.append(CommonBullet(shooting_player.pos.clone()))
+
+                self.broadcast(S2CBullets(self.game.bullets))
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

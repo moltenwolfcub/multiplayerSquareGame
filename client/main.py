@@ -1,5 +1,6 @@
 import _thread
 import sys
+import time
 
 import pygame
 
@@ -62,12 +63,28 @@ class Game:
 
 
     def run(self) -> None:
+        _thread.start_new_thread(self.update_loop, ())
+
         while not self.quit:
             self._check_events()
             self.network.send_updates()
             self._update_screen()
 
         sys.exit()
+    
+    def update_loop(self) -> None:
+        while not self.quit:
+            tick_start = time.perf_counter_ns()
+
+            for bullet in self.bullets:
+                bullet.update()
+
+            tick_stop = time.perf_counter_ns()
+            time_remaining_ns = self.settings.tick_time_ns - (tick_stop-tick_start)
+
+
+            if time_remaining_ns > 0:
+                time.sleep(time_remaining_ns/1_000_000_000)
     
     def _update_screen(self) -> None:
         # all coordinates are in the 1600 x 900 screen and scaled from there when drawing
@@ -85,11 +102,12 @@ class Game:
 
         self.screen.fill(self.settings.color_bg.to_tuple())
 
+        for player in self.players:
+            player.draw(scaler)
+
         for bullet in self.bullets:
             bullet.draw(scaler)
 
-        for player in self.players:
-            player.draw(scaler)
 
         self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
         self.physical_screen.blit(self.screen, self.screen_offset)
