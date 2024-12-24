@@ -7,7 +7,7 @@ from client import keybinds
 from client.network import Network
 from client.player import ClientPlayer
 from client.settings import Settings
-from common.c2sPackets import C2SRequestPlayerList
+from common.c2s_packets import C2SRequestPlayerList
 
 
 class Game:

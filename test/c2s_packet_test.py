@@ -1,7 +1,7 @@
 import unittest
 
-from common.c2sPackets import C2SHandshake, C2SMovementUpdate
-from common.dataTypes import Vec2D
+from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.data_types import Vec2D
 
 
 class c2sPackets(unittest.TestCase):

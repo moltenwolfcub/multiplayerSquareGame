@@ -1,13 +1,13 @@
 from typing import override
 
-from common import packetIDs
-from common.dataTypes import Vec2D
-from common.packetBase import Packet
+from common import packet_ids
+from common.data_types import Vec2D
+from common.packet_base import Packet
 
 class C2SHandshake(Packet):
 	EXPECTED_MSG = "pong"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
-		super().__init__(packetIDs.C2S_HANDSHAKE)
+		super().__init__(packet_ids.C2S_HANDSHAKE)
 
 		self.message: str = msg
 	
@@ -18,7 +18,7 @@ class C2SHandshake(Packet):
 	@override
 	@staticmethod
 	def decode_data(data: bytes) -> 'C2SHandshake':
-		packet_data = data[packetIDs.packet_id_size:]
+		packet_data = data[packet_ids.packet_id_size:]
 
 		msg = packet_data.decode("utf-8")
 		return C2SHandshake(msg)
@@ -28,7 +28,7 @@ class C2SHandshake(Packet):
 
 class C2SRequestPlayerList(Packet):
 	def __init__(self) -> None:
-		super().__init__(packetIDs.C2S_PLAYER_REQUEST)
+		super().__init__(packet_ids.C2S_PLAYER_REQUEST)
 
 	@override
 	def encode_data(self) -> bytes:
@@ -41,7 +41,7 @@ class C2SRequestPlayerList(Packet):
 
 class C2SMovementUpdate(Packet):
 	def __init__(self, mov_dir: Vec2D) -> None:
-		super().__init__(packetIDs.C2S_MOVEMENT_UPDATE)
+		super().__init__(packet_ids.C2S_MOVEMENT_UPDATE)
 
 		self.mov_dir = mov_dir
 	
@@ -76,7 +76,7 @@ class C2SMovementUpdate(Packet):
 	@override
 	@staticmethod
 	def decode_data(data: bytes) -> 'C2SMovementUpdate':
-		packet_data = data[packetIDs.packet_id_size:]
+		packet_data = data[packet_ids.packet_id_size:]
 
 		packed_deltas = int.from_bytes(packet_data)
 		packed_dx = packed_deltas >> 2

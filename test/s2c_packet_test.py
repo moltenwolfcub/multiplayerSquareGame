@@ -1,8 +1,8 @@
 import unittest
 
-from common.dataTypes import Color, Vec2D
+from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
-from common.s2cPackets import S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CHandshake, S2CPlayers
 
 
 class s2cPackets(unittest.TestCase):

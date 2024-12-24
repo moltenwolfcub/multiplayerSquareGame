@@ -1,5 +1,5 @@
 
-from common.dataTypes import Color
+from common.data_types import Color
 
 
 class Settings:

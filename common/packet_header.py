@@ -1,5 +1,5 @@
 import socket
-from common.packetBase import Packet
+from common.packet_base import Packet
 
 class PacketHeader:
 	HEADER_SIZE: int = 2

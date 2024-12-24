@@ -1,9 +1,9 @@
 import random
 from typing import TYPE_CHECKING, Optional
 
-from common.dataTypes import Color, Vec2D
+from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
-from common.s2cPackets import S2CPlayers
+from common.s2c_packets import S2CPlayers
 from server.settings import Settings
 
 if TYPE_CHECKING:

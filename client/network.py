@@ -4,12 +4,12 @@ import sys
 from typing import TYPE_CHECKING, Optional
 
 from client.player import ClientPlayer
-from common import packetIDs
-from common.c2sPackets import C2SHandshake, C2SMovementUpdate
-from common.dataTypes import Vec2D
-from common.packetBase import Packet
-from common.packetHeader import PacketHeader
-from common.s2cPackets import S2CHandshake, S2CPlayers
+from common import packet_ids
+from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.data_types import Vec2D
+from common.packet_base import Packet
+from common.packet_header import PacketHeader
+from common.s2c_packets import S2CHandshake, S2CPlayers
 
 if TYPE_CHECKING:
 	from client.main import Game
@@ -106,18 +106,18 @@ class Network:
 		packet_type = Packet.decode_id(raw_packet)
 
 		match packet_type:
-			case packetIDs.S2C_HANDSHAKE:
+			case packet_ids.S2C_HANDSHAKE:
 				handshake_packet: S2CHandshake = S2CHandshake.decode_data(raw_packet)
 
 				if not handshake_packet.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
 				
-			case packetIDs.S2C_HANDSHAKE_FAIL:
+			case packet_ids.S2C_HANDSHAKE_FAIL:
 				print("Server error during handshake. Aborting")
 				self.close_connection()
 			
-			case packetIDs.S2C_PLAYERS:
+			case packet_ids.S2C_PLAYERS:
 				players_packet: S2CPlayers = S2CPlayers.decode_data(raw_packet)
 				
 				client_players: list[ClientPlayer] = []

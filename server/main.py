@@ -5,13 +5,13 @@ import sys
 import time
 from typing import Optional
 
-from common import packetIDs
-from common.c2sPackets import C2SHandshake, C2SMovementUpdate
-from common.packetBase import Packet
-from common.packetHeader import PacketHeader
-from common.s2cPackets import S2CFailedHandshake, S2CHandshake, S2CPlayers
-from server.gameData import GameData
-from server.rawPacket import RawPacket
+from common import packet_ids
+from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.packet_base import Packet
+from common.packet_header import PacketHeader
+from common.s2c_packets import S2CFailedHandshake, S2CHandshake, S2CPlayers
+from server.game_data import GameData
+from server.raw_packet import RawPacket
 
 
 class Server:
@@ -226,17 +226,17 @@ class Server:
 		packet_type: int = Packet.decode_id(rawPacket.data)
 
 		match packet_type:
-			case packetIDs.C2S_HANDSHAKE:
+			case packet_ids.C2S_HANDSHAKE:
 				handshake_packet: C2SHandshake = C2SHandshake.decode_data(rawPacket.data)
 
 				if not handshake_packet.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
 			
-			case packetIDs.C2S_PLAYER_REQUEST:
+			case packet_ids.C2S_PLAYER_REQUEST:
 				PacketHeader.send_packet(rawPacket.sender, S2CPlayers(self.game.players))
 			
-			case packetIDs.C2S_MOVEMENT_UPDATE:
+			case packet_ids.C2S_MOVEMENT_UPDATE:
 				movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(rawPacket.data)
 
 				player = self.game.get_player(self.open_connections[rawPacket.sender])

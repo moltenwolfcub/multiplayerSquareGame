@@ -1,14 +1,14 @@
 from typing import override
 
-from common import packetIDs
-from common.packetBase import Packet
+from common import packet_ids
+from common.packet_base import Packet
 from common.player import CommonPlayer
 
 
 class S2CHandshake(Packet):
 	EXPECTED_MSG: str = "ping"
 	def __init__(self, msg: str = EXPECTED_MSG) -> None:
-		super().__init__(packetIDs.S2C_HANDSHAKE)
+		super().__init__(packet_ids.S2C_HANDSHAKE)
 
 		self.message: str = msg
 	
@@ -19,7 +19,7 @@ class S2CHandshake(Packet):
 	@override
 	@staticmethod
 	def decode_data(data: bytes) -> 'S2CHandshake':
-		packet_data = data[packetIDs.packet_id_size:]
+		packet_data = data[packet_ids.packet_id_size:]
 
 		msg = packet_data.decode("utf-8")
 		return S2CHandshake(msg)
@@ -30,7 +30,7 @@ class S2CHandshake(Packet):
 
 class S2CFailedHandshake(Packet):
 	def __init__(self) -> None:
-		super().__init__(packetIDs.S2C_HANDSHAKE_FAIL)
+		super().__init__(packet_ids.S2C_HANDSHAKE_FAIL)
 	
 	@override
 	def encode_data(self) -> bytes:
@@ -44,7 +44,7 @@ class S2CFailedHandshake(Packet):
 
 class S2CPlayers(Packet):
 	def __init__(self, players: list[CommonPlayer]) -> None:
-		super().__init__(packetIDs.S2C_PLAYERS)
+		super().__init__(packet_ids.S2C_PLAYERS)
 
 		self.players = players
 
@@ -59,7 +59,7 @@ class S2CPlayers(Packet):
 	@override
 	@staticmethod
 	def decode_data(data: bytes) -> 'S2CPlayers':
-		packet_data = data[packetIDs.packet_id_size:]
+		packet_data = data[packet_ids.packet_id_size:]
 
 		player_list: list[CommonPlayer] = []
 

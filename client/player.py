@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Callable
 
 import pygame
 
-from common.dataTypes import Color, Vec2D
+from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
 
 if TYPE_CHECKING:

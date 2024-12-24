@@ -1,4 +1,4 @@
-from common.dataTypes import Color, Vec2D
+from common.data_types import Color, Vec2D
 
 
 class CommonPlayer:

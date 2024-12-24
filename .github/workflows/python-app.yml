@@ -21,4 +21,4 @@ jobs:
         python-version: "3.13.1"
     - name: Test with unittest
       run: |
-        python -m unittest discover -v -s ./test -p  *Test.py
+        python -m unittest discover -v -s ./test -p  *_test.py
