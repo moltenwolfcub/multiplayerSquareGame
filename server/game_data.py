@@ -40,13 +40,17 @@ class GameData:
         if players_dirty:
             self.server.broadcast(S2CPlayers(self.players))
         
+        bullet_dirty = False
         for bullet in self.bullets:
-
             bullet.pos.y += self.settings.bullet_speed
+            bullet_dirty = True
+
             if bullet.pos.y > self.settings.world_height:
                 self.bullets.remove(bullet)
-                self.server.broadcast(S2CBullets(self.bullets))
                 continue
+        
+        if bullet_dirty:
+            self.server.broadcast(S2CBullets(self.bullets))
         
 
     def add_player(self, player: CommonPlayer) -> None:

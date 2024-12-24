@@ -28,9 +28,3 @@ class ClientBullet:
     @staticmethod
     def from_common(common: CommonBullet, game: 'Game') -> 'ClientBullet':
         return ClientBullet(game, common.pos)
-
-    def update(self) -> None:
-        
-        self.pos.y += self.game.settings.bullet_speed
-
-        self.rect = pygame.Rect(self.pos.x-self.radius, self.pos.y-self.radius, self.radius*2, self.radius*2)
