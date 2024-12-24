@@ -213,8 +213,7 @@ class Server:
 
 				case "c" | "connections":
 					print("CONNECTIONS:")
-					for c in self.openConnections:
-						id = self.openConnections[c]
+					for c, id in self.openConnections.items():
 						print(f"- {id}: {c}")
 
 					if len(self.game.players) == 0:

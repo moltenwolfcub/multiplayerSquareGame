@@ -26,8 +26,7 @@ class s2cPackets(unittest.TestCase):
 		encoded = packet.encode()
 		decoded = S2CPlayers.decodeData(encoded)
 
-		for i in range(len(packet.players)):
-			expected = packet.players[i]
+		for i, expected in enumerate(packet.players):
 			actual = decoded.players[i]
 
 			self.assertEqual(actual, expected)
