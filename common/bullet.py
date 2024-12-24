@@ -21,6 +21,9 @@ class CommonBullet:
         y = int.from_bytes(bytes[2:4])
 
         return CommonBullet(pos=Vec2D(x, y))
+    
+    def __str__(self) -> str:
+        return f"Bullet[pos= {self.pos}]"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CommonBullet):

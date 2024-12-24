@@ -212,6 +212,14 @@ class Server:
                     if len(self.game.players) == 0:
                         print("empty")
 
+                case "b" | "bullets":
+                    print("BULLETS:")
+                    for b in self.game.bullets:
+                        print(f"- {b}")
+
+                    if len(self.game.bullets) == 0:
+                        print("empty")
+
                 case "c" | "connections":
                     print("CONNECTIONS:")
                     for c, id in self.open_connections.items():
