@@ -13,7 +13,7 @@ class Settings:
         self.screen_aspect_ratio: float = self.screen_width / self.screen_height
 
         # server
-        self.tps: int = 20
+        self.tps: int = 60
         self.tick_time_ns: int = 1_000_000_000 // self.tps
 
         # colors

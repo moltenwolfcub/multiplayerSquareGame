@@ -2,7 +2,7 @@
 class Settings:
 
     def __init__(self) -> None:
-        self.tps: int = 20
+        self.tps: int = 60
         self.tick_time_ns: int = 1_000_000_000 // self.tps
 
         # worldSize
