@@ -4,6 +4,7 @@ import sys
 import pygame
 
 from client import keybinds
+from client.bullet import ClientBullet
 from client.network import Network
 from client.player import ClientPlayer
 from client.settings import Settings
@@ -43,6 +44,8 @@ class Game:
         self.players: list[ClientPlayer] = []
         self.network.send(C2SRequestPlayerList())
 
+        self.bullets: list[ClientBullet] = []
+
         self.movement_codes: list[int] = [0, 0, 0, 0]
         self.movement_codes_dirty: bool = False
 
@@ -81,6 +84,9 @@ class Game:
 
 
         self.screen.fill(self.settings.color_bg.to_tuple())
+
+        for bullet in self.bullets:
+            bullet.draw(scaler)
 
         for player in self.players:
             player.draw(scaler)
