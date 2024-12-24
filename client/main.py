@@ -46,6 +46,8 @@ class Game:
         self.movement_codes: list[int] = [0, 0, 0, 0]
         self.movement_codes_dirty: bool = False
 
+        self.is_shooting: bool = False
+
         self.quit = False
 
     def initialise_network(self, port: int) -> None:
@@ -116,6 +118,9 @@ class Game:
             case keybinds.MOV_RIGHT:
                 self.movement_codes[3] = 1
                 self.movement_codes_dirty = True
+            
+            case keybinds.SHOOT:
+                self.is_shooting = True
 
             case _:
                 pass

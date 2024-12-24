@@ -222,29 +222,38 @@ class Server:
                 case _:
                     pass
 
-    def handle_packet(self, rawPacket: RawPacket) -> Optional[Exception]:
-        packet_type: int = Packet.decode_id(rawPacket.data)
+    def handle_packet(self, raw_packet: RawPacket) -> Optional[Exception]:
+        packet_type: int = Packet.decode_id(raw_packet.data)
 
         match packet_type:
             case packet_ids.C2S_HANDSHAKE:
-                handshake_packet: C2SHandshake = C2SHandshake.decode_data(rawPacket.data)
+                handshake_packet: C2SHandshake = C2SHandshake.decode_data(raw_packet.data)
 
                 if not handshake_packet.isCorrect():
                     print("Error during handshake")
                     return ConnectionError()
             
             case packet_ids.C2S_PLAYER_REQUEST:
-                PacketHeader.send_packet(rawPacket.sender, S2CPlayers(self.game.players))
+                PacketHeader.send_packet(raw_packet.sender, S2CPlayers(self.game.players))
             
             case packet_ids.C2S_MOVEMENT_UPDATE:
-                movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(rawPacket.data)
+                movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(raw_packet.data)
 
-                player = self.game.get_player(self.open_connections[rawPacket.sender])
+                player = self.game.get_player(self.open_connections[raw_packet.sender])
                 if player is None:
-                    print(f"Error! No player assosiated with connection: {rawPacket.sender}")
+                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
                     return LookupError()
                 
                 player.mov_dir = movement_packet.mov_dir
+            
+            case packet_ids.C2S_CREATE_BULLET:
+                shooting_player = self.game.get_player(self.open_connections[raw_packet.sender])
+
+                if shooting_player is None:
+                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
+                    return LookupError()
+
+                print(f"Pow from {shooting_player.pos}")
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

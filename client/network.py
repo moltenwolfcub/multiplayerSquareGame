@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 from client.player import ClientPlayer
 from common import packet_ids
-from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.data_types import Vec2D
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
@@ -138,3 +138,7 @@ class Network:
             self.send(C2SMovementUpdate(Vec2D(dx,dy)))
 
             self.game.movement_codes_dirty = False
+        
+        if self.game.is_shooting:
+            self.send(C2SCreateBullet())
+            self.game.is_shooting = False

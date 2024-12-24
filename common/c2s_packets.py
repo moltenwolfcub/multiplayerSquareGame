@@ -105,3 +105,17 @@ class C2SMovementUpdate(Packet):
                 print(f"error decoding movement bytes. unknown movement Direction y-value {packed_dy}")
         
         return C2SMovementUpdate(Vec2D(dx,dy))
+
+class C2SCreateBullet(Packet):
+
+    def __init__(self) -> None:
+        super().__init__(packet_ids.C2S_CREATE_BULLET)
+
+    @override
+    def encode_data(self) -> bytes:
+        return bytes()
+
+    @override
+    @staticmethod
+    def decode_data(data: bytes) -> 'C2SCreateBullet':
+        return C2SCreateBullet()

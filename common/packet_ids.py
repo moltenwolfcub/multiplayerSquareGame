@@ -4,6 +4,7 @@ packet_id_size = 1 # number of bytes a packetID takes up
 C2S_HANDSHAKE = 0
 C2S_PLAYER_REQUEST = 1
 C2S_MOVEMENT_UPDATE = 2
+C2S_CREATE_BULLET = 3
 
 #S2C PACKETS
 S2C_HANDSHAKE = 128 + 0
