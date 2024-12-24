@@ -1,8 +1,9 @@
 import unittest
 
+from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
-from common.s2c_packets import S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers
 
 
 class s2cPackets(unittest.TestCase):
@@ -28,5 +29,20 @@ class s2cPackets(unittest.TestCase):
 
         for i, expected in enumerate(packet.players):
             actual = decoded.players[i]
+
+            self.assertEqual(actual, expected)
+
+    def testBulletsPacket(self):
+        packet = S2CBullets([
+            CommonBullet(Vec2D(128,  16)),
+            CommonBullet(Vec2D(  0, 250)),
+            CommonBullet(Vec2D(830, 678)),
+        ])
+
+        encoded = packet.encode()
+        decoded = S2CBullets.decode_data(encoded)
+
+        for i, expected in enumerate(packet.bullets):
+            actual = decoded.bullets[i]
 
             self.assertEqual(actual, expected)

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
-from common.s2c_packets import S2CPlayers
+from common.s2c_packets import S2CBullets, S2CPlayers
 from server.settings import Settings
 
 if TYPE_CHECKING:
@@ -40,12 +40,18 @@ class GameData:
         if players_dirty:
             self.server.broadcast(S2CPlayers(self.players))
         
+        bullets_dirty = False
         for bullet in self.bullets:
+            bullets_dirty = True
+
             bullet.pos.y += 1
             if bullet.pos.y > self.settings.world_height:
                 self.bullets.remove(bullet)
                 continue
-            print(f"Bullet: {bullet.pos}")
+            # print(f"Bullet: {bullet.pos}")
+        
+        if bullets_dirty:
+            self.server.broadcast(S2CBullets(self.bullets))
 
     def add_player(self, player: CommonPlayer) -> None:
         self.players.append(player)
