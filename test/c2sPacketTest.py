@@ -19,14 +19,14 @@ class c2sPackets(unittest.TestCase):
 		for p in packets:
 			with self.subTest(packet=packets[p]):
 				encoded = p.encode()
-				decoded = C2SMovementUpdate.decodeData(encoded)
+				decoded = C2SMovementUpdate.decode_data(encoded)
 
-				self.assertEqual(decoded.movDir, p.movDir)
+				self.assertEqual(decoded.mov_dir, p.mov_dir)
 
 	def testHandshakePacket(self):
 		packet = C2SHandshake("test")
 
 		encoded = packet.encode()
-		decoded = C2SHandshake.decodeData(encoded)
+		decoded = C2SHandshake.decode_data(encoded)
 
 		self.assertEqual(decoded.message, packet.message)

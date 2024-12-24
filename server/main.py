@@ -22,10 +22,10 @@ class Server:
 
 		self.port: int = port
 
-		self.recievedPackets: queue.Queue[RawPacket] = queue.Queue()
+		self.recieved_packets: queue.Queue[RawPacket] = queue.Queue()
 		self.quit: bool = False
 
-		self.openConnections: dict[socket.socket, int] = {}
+		self.open_connections: dict[socket.socket, int] = {}
 
 		self.game: GameData = GameData(self)
 
@@ -34,111 +34,111 @@ class Server:
 			self.socket.bind((self.server, self.port))
 		except socket.error as e:
 			print(e)
-			self.closeServer()
+			self.close_server()
 			return
 		
 		self.socket.listen()
 		print(f"Server started on port {self.socket.getsockname()[1]}")
 
-		_thread.start_new_thread(self.consoleLoop, ())
-		_thread.start_new_thread(self.mainLoop, ())
-		_thread.start_new_thread(self.packetLoop, ())
-		_thread.start_new_thread(self.acceptLoop, ())
+		_thread.start_new_thread(self.console_loop, ())
+		_thread.start_new_thread(self.main_loop, ())
+		_thread.start_new_thread(self.packet_loop, ())
+		_thread.start_new_thread(self.accept_loop, ())
 		
 		while not self.quit: pass
 		sys.exit()
 
 
-	def acceptLoop(self) -> None:
+	def accept_loop(self) -> None:
 		'''Handles accepting new clients'''
 		while not self.quit:
 			conn, addr = self.socket.accept()
 
 			print(f"Connecting to: {addr}")
 
-			_thread.start_new_thread(self.readLoop, (conn,))
+			_thread.start_new_thread(self.read_loop, (conn,))
 	
-	def readLoop(self, conn: socket.socket) -> None:
+	def read_loop(self, conn: socket.socket) -> None:
 		'''One per client to store received packets for later processing'''
-		if self.initialHandshake(conn) is not None:
+		if self.initial_handshake(conn) is not None:
 			return
 		
-		self.onClientJoin(conn)
+		self.on_client_join(conn)
 
 		while not self.quit:
 			try:
-				rawPacket = self.recv(conn)
-				if rawPacket is None:
-					self.closeConnection(conn)
+				raw_packet = self.recv(conn)
+				if raw_packet is None:
+					self.close_connection(conn)
 					break
 
-				self.recievedPackets.put(RawPacket(rawPacket, conn))
+				self.recieved_packets.put(RawPacket(raw_packet, conn))
 
 			except ConnectionResetError:
-				self.closeConnection(conn)
+				self.close_connection(conn)
 				break
 
 			except Exception as e:
-				self.closeConnection(conn)
+				self.close_connection(conn)
 				print("Network Error: ", e)
 				break
 		
 		# once players are properly linked to clients change to a client disconnect message
 		print(f"Lost connection to peer")
-		self.onClientDisconnect(conn)
+		self.on_client_disconnect(conn)
 	
-	def packetLoop(self) -> None:
+	def packet_loop(self) -> None:
 		'''Processes all recieved packets'''
 		while not self.quit:
-			rawPacket = self.recievedPackets.get()
-			self.handlePacket(rawPacket)
-			self.recievedPackets.task_done()
+			raw_packet = self.recieved_packets.get()
+			self.handle_packet(raw_packet)
+			self.recieved_packets.task_done()
 
-	def initialHandshake(self, conn: socket.socket) -> Optional[Exception]:
-		PacketHeader.sendPacket(conn, S2CHandshake())
+	def initial_handshake(self, conn: socket.socket) -> Optional[Exception]:
+		PacketHeader.send_packet(conn, S2CHandshake())
 		try:
-			checkPacket = self.recv(conn)
+			check_packet = self.recv(conn)
 		except ConnectionResetError:
 			print(f"Error during response from closed peer.")
-			self.closeConnection(conn)
+			self.close_connection(conn)
 			return ConnectionError()
 
-		if checkPacket is None:
+		if check_packet is None:
 			print(f"No response to handshake from peer: {conn.getpeername()}")
-			PacketHeader.sendPacket(conn, S2CFailedHandshake())
+			PacketHeader.send_packet(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
-			self.closeConnection(conn)
+			self.close_connection(conn)
 			return ConnectionError()
 		
-		if self.handlePacket(RawPacket(checkPacket, conn)) is not None:
+		if self.handle_packet(RawPacket(check_packet, conn)) is not None:
 			print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
-			PacketHeader.sendPacket(conn, S2CFailedHandshake())
+			PacketHeader.send_packet(conn, S2CFailedHandshake())
 			time.sleep(0.1) # time for client to close on their end
-			self.closeConnection(conn)
+			self.close_connection(conn)
 			return ConnectionError()
 		
 		print(f"Connection established to peer: {conn.getpeername()}")
 
-	def closeServer(self) -> None:
+	def close_server(self) -> None:
 		self.quit = True
 
-	def closeConnection(self, conn: socket.socket) -> None:
+	def close_connection(self, conn: socket.socket) -> None:
 		try:
 			conn.close()
 		except:
 			print("Error while closing connection")
 		
-	def getFreeID(self) -> int:
+	def get_free_id(self) -> int:
 		id = 0
 		while True:
-			if list(self.openConnections.values()).count(id) == 0:
+			if list(self.open_connections.values()).count(id) == 0:
 				return id
 			id += 1
 
 	def broadcast(self, packet: Packet) -> None:
-		for c in self.openConnections:
+		for c in self.open_connections:
 			try:
-				PacketHeader.sendPacket(c, packet)
+				PacketHeader.send_packet(c, packet)
 			except BrokenPipeError:
 				pass
 			except OSError as e:
@@ -152,56 +152,56 @@ class Server:
 		if not header:
 			return None
 
-		packetSize = PacketHeader.getPacketsize(header)
+		packet_size = PacketHeader.get_packet_size(header)
 
-		rawPacket = conn.recv(packetSize)
-		if not rawPacket:
+		raw_packet = conn.recv(packet_size)
+		if not raw_packet:
 			return None
 		
 		# printBytes(rawPacket)
-		return rawPacket
+		return raw_packet
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
-	def onClientJoin(self, conn: socket.socket) -> None:
-		id = self.getFreeID()
-		self.openConnections[conn] = id
+	def on_client_join(self, conn: socket.socket) -> None:
+		id = self.get_free_id()
+		self.open_connections[conn] = id
 
-		self.game.addRandomPlayer(id)
+		self.game.add_random_player(id)
 
 		self.broadcast(S2CPlayers(self.game.players))
 	
-	def onClientDisconnect(self, conn: socket.socket) -> None:
-		id = self.openConnections.pop(conn, None)
+	def on_client_disconnect(self, conn: socket.socket) -> None:
+		id = self.open_connections.pop(conn, None)
 
 		if id is None:
 			return # connection was never in list
 
-		self.game.removePlayer(id)
+		self.game.remove_player(id)
 
 		self.broadcast(S2CPlayers(self.game.players))
 
-	def mainLoop(self) -> None:
+	def main_loop(self) -> None:
 		'''Handles main game logic separate from network events'''
 		while not self.quit:
-			tickStart = time.perf_counter_ns()
+			tick_start = time.perf_counter_ns()
 
 			self.game.update()
 
-			tickStop = time.perf_counter_ns()
-			timeRemainingNS = self.game.settings.tickTimeNS - (tickStop-tickStart)
+			tick_stop = time.perf_counter_ns()
+			time_remaining_ns = self.game.settings.tick_time_ns - (tick_stop-tick_start)
 
-			if timeRemainingNS > 0:
-				time.sleep(timeRemainingNS//1_000_000_000)
+			if time_remaining_ns > 0:
+				time.sleep(time_remaining_ns//1_000_000_000)
 
-	def consoleLoop(self) -> None:
+	def console_loop(self) -> None:
 		'''Handles server console commands'''
 		while not self.quit:
-			consoleInput: str = input().lower().strip()
+			console_input: str = input().lower().strip()
 
-			match consoleInput:
+			match console_input:
 				case "q" | "quit":
-					self.closeServer()
+					self.close_server()
 
 				case "p" | "players":
 					print("PLAYERS:")
@@ -213,8 +213,8 @@ class Server:
 
 				case "c" | "connections":
 					print("CONNECTIONS:")
-					for c, id in self.openConnections.items():
-						print(f"- {id}: {c}")
+					for c, id in self.open_connections.items():
+						print(f"- {id}: {c}") 
 
 					if len(self.game.players) == 0:
 						print("empty")
@@ -222,30 +222,30 @@ class Server:
 				case _:
 					pass
 
-	def handlePacket(self, rawPacket: RawPacket) -> Optional[Exception]:
-		packetType: int = Packet.decodeID(rawPacket.data)
+	def handle_packet(self, rawPacket: RawPacket) -> Optional[Exception]:
+		packet_type: int = Packet.decode_id(rawPacket.data)
 
-		match packetType:
+		match packet_type:
 			case packetIDs.C2S_HANDSHAKE:
-				handshakePacket: C2SHandshake = C2SHandshake.decodeData(rawPacket.data)
+				handshake_packet: C2SHandshake = C2SHandshake.decode_data(rawPacket.data)
 
-				if not handshakePacket.isCorrect():
+				if not handshake_packet.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
 			
 			case packetIDs.C2S_PLAYER_REQUEST:
-				PacketHeader.sendPacket(rawPacket.sender, S2CPlayers(self.game.players))
+				PacketHeader.send_packet(rawPacket.sender, S2CPlayers(self.game.players))
 			
 			case packetIDs.C2S_MOVEMENT_UPDATE:
-				movementPacket: C2SMovementUpdate = C2SMovementUpdate.decodeData(rawPacket.data)
+				movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(rawPacket.data)
 
-				player = self.game.getPlayer(self.openConnections[rawPacket.sender])
+				player = self.game.get_player(self.open_connections[rawPacket.sender])
 				if player is None:
 					print(f"Error! No player assosiated with connection: {rawPacket.sender}")
 					return LookupError()
 				
-				player.movDir = movementPacket.movDir
+				player.mov_dir = movement_packet.mov_dir
 
 			case _:
-				print(f"Unknown packet (ID: {packetType})")
+				print(f"Unknown packet (ID: {packet_type})")
 				return ConnectionError()

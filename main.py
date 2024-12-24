@@ -6,7 +6,7 @@ from server.main import Server
 
 def main() -> None:
 
-	args = parseArgs()
+	args = parse_args()
 
 	# defaults to client
 	server = False # true for server false for client
@@ -28,7 +28,7 @@ def main() -> None:
 			g: Game = Game(args.port)
 			g.run()
 
-def parseArgs() -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
 	parser = argparse.ArgumentParser(
 		prog = "Squares game",
 		description = "A simple 2d muliplayer game written in python with pygame"

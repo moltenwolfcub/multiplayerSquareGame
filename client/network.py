@@ -22,7 +22,7 @@ class Network:
 		self.server: str = "127.0.0.1"
 		self.port: int = port
 
-		self.recievedPackets: queue.Queue[bytes] = queue.Queue()
+		self.recieved_packets: queue.Queue[bytes] = queue.Queue()
 		self.quit: bool = False
 
 	def connect(self) -> None:
@@ -31,12 +31,12 @@ class Network:
 
 		if recieved is None:
 			print("No handshake sent from server")
-			self.closeConnection()
+			self.close_connection()
 		
-		elif self.handlePacket(recieved) is not None:
+		elif self.handle_packet(recieved) is not None:
 			print("Handshake failed (incorrect data recieved) when connecting to server")
 			# probably should send back a failure packet but cba rn
-			self.closeConnection()
+			self.close_connection()
 		
 		if self.quit:
 			sys.exit()
@@ -46,53 +46,53 @@ class Network:
 	
 	def send(self, packet: Packet) -> None:
 		# print(packet.encode())
-		PacketHeader.sendPacket(self.client, packet)
+		PacketHeader.send_packet(self.client, packet)
 
 	def recv(self) -> Optional[bytes]:
 		header = self.client.recv(PacketHeader.HEADER_SIZE)
 		if not header:
 			return None
 
-		packetSize = PacketHeader.getPacketsize(header)
+		packet_size = PacketHeader.get_packet_size(header)
 
-		rawPacket = self.client.recv(packetSize)
-		if not rawPacket:
+		raw_packet = self.client.recv(packet_size)
+		if not raw_packet:
 			return None
 		
-		return rawPacket
+		return raw_packet
 
-	def readLoop(self) -> None:
+	def read_loop(self) -> None:
 		while not self.quit:
 			try:
-				rawPacket = self.recv()
+				raw_packet = self.recv()
 
-				if rawPacket is None:
+				if raw_packet is None:
 					print("Disconnected")
-					self.closeConnection()
+					self.close_connection()
 					break
 
-				self.recievedPackets.put(rawPacket)
+				self.recieved_packets.put(raw_packet)
 
 			except OSError as e:
 				if e.errno == 9:
 					print("Disconnected")
-					self.closeConnection()
+					self.close_connection()
 					break
 				else:
 					raise e
 
 			except Exception as e:
 				print("Network Error: ", e)
-				self.closeConnection()
+				self.close_connection()
 				break
 
-	def packetLoop(self) -> None:
+	def packet_loop(self) -> None:
 		while not self.quit:
-			rawPacket = self.recievedPackets.get()
-			self.handlePacket(rawPacket)
-			self.recievedPackets.task_done()
+			raw_packet = self.recieved_packets.get()
+			self.handle_packet(raw_packet)
+			self.recieved_packets.task_done()
 
-	def closeConnection(self) -> None:
+	def close_connection(self) -> None:
 		try:
 			self.client.close()
 		except:
@@ -102,43 +102,39 @@ class Network:
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
-	def handlePacket(self, rawPacket: bytes) -> Optional[Exception]:
-		packetType = Packet.decodeID(rawPacket)
+	def handle_packet(self, raw_packet: bytes) -> Optional[Exception]:
+		packet_type = Packet.decode_id(raw_packet)
 
-		match packetType:
+		match packet_type:
 			case packetIDs.S2C_HANDSHAKE:
-				handShakePacket: S2CHandshake = S2CHandshake.decodeData(rawPacket)
+				handshake_packet: S2CHandshake = S2CHandshake.decode_data(raw_packet)
 
-				if not handShakePacket.isCorrect():
+				if not handshake_packet.isCorrect():
 					print("Error during handshake")
 					return ConnectionError()
 				
 			case packetIDs.S2C_HANDSHAKE_FAIL:
 				print("Server error during handshake. Aborting")
-				self.closeConnection()
+				self.close_connection()
 			
 			case packetIDs.S2C_PLAYERS:
-				playersPacket: S2CPlayers = S2CPlayers.decodeData(rawPacket)
+				players_packet: S2CPlayers = S2CPlayers.decode_data(raw_packet)
 				
-				clientPlayers: list[ClientPlayer] = []
+				client_players: list[ClientPlayer] = []
 
-				for commonPlayer in playersPacket.players:
-					clientPlayers.append(ClientPlayer.fromCommon(commonPlayer, self.game))
+				for common_player in players_packet.players:
+					client_players.append(ClientPlayer.from_common(common_player, self.game))
 				
-				self.game.players = clientPlayers
-				
-				# print("PLAYERS")
-				# for p in playersPacket.players:
-				# 	print(f"- {p}")
+				self.game.players = client_players
 
 			case _:
-				print(f"Unknown packet (ID: {packetType})")
+				print(f"Unknown packet (ID: {packet_type})")
 				return ConnectionError()
 	
-	def sendUpdates(self) -> None:
-		if self.game.movementCodesDirty:
-			dx = self.game.movementCodes[3] - self.game.movementCodes[2]
-			dy = self.game.movementCodes[1] - self.game.movementCodes[0]
+	def send_updates(self) -> None:
+		if self.game.movement_codes_dirty:
+			dx = self.game.movement_codes[3] - self.game.movement_codes[2]
+			dy = self.game.movement_codes[1] - self.game.movement_codes[0]
 			self.send(C2SMovementUpdate(Vec2D(dx,dy)))
 
-			self.game.movementCodesDirty = False
+			self.game.movement_codes_dirty = False

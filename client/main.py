@@ -17,7 +17,7 @@ class Game:
 
 		self.settings: Settings = Settings()
 		
-		self.initialiseNetwork(port)
+		self.initialise_network(port)
 
 		# region SCREEN-SETUP
 
@@ -28,140 +28,140 @@ class Game:
 		# Screen is scaled to virtual screen and virtual screen is drawn
 		# onto the physical one
 
-		self.physicalScreen: pygame.Surface = pygame.display.set_mode((self.settings.screenWidth, self.settings.screenHeight), pygame.RESIZABLE)
+		self.physical_screen: pygame.Surface = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
 		pygame.display.set_caption("Squares")
 
-		self.virtualScreenWidth: int = self.settings.screenWidth
-		self.virtualScreenHeight: int = self.settings.screenHeight
+		self.virtual_screen_width: int = self.settings.screen_width
+		self.virtual_screen_height: int = self.settings.screen_height
 
 		# this is the virtual screen
-		self.screen: pygame.Surface = pygame.Surface((self.virtualScreenWidth, self.virtualScreenHeight))
-		self.screenOffset: tuple[int,int] = (0, 0)
+		self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
+		self.screen_offset: tuple[int,int] = (0, 0)
 
 		# endregion
 
 		self.players: list[ClientPlayer] = []
 		self.network.send(C2SRequestPlayerList())
 
-		self.movementCodes: list[int] = [0, 0, 0, 0]
-		self.movementCodesDirty: bool = False
+		self.movement_codes: list[int] = [0, 0, 0, 0]
+		self.movement_codes_dirty: bool = False
 
 		self.quit = False
 
-	def initialiseNetwork(self, port: int) -> None:
+	def initialise_network(self, port: int) -> None:
 		self.network = Network(self, port)
 		self.network.connect()
 
-		_thread.start_new_thread(self.network.packetLoop, ())
-		_thread.start_new_thread(self.network.readLoop, ())
+		_thread.start_new_thread(self.network.packet_loop, ())
+		_thread.start_new_thread(self.network.read_loop, ())
 
 
 	def run(self) -> None:
 		while not self.quit:
-			self._checkEvents()
-			self.network.sendUpdates()
-			self._updateScreen()
+			self._check_events()
+			self.network.send_updates()
+			self._update_screen()
 
 		sys.exit()
 	
-	def _updateScreen(self) -> None:
+	def _update_screen(self) -> None:
 		# all coordinates are in the 1600 x 900 screen and scaled from there when drawing
 		def scaler(r: pygame.Rect) -> pygame.Rect:
 			'''Scales any rects from 1600 x 900 space to virtualScreen space'''
 
-			scaleAmount: float = self.virtualScreenWidth / self.settings.screenWidth
+			scale_amount: float = self.virtual_screen_width / self.settings.screen_width
 			return pygame.Rect(
-				r.x * scaleAmount,
-				r.y * scaleAmount,
-				r.w * scaleAmount,
-				r.h * scaleAmount,
+				r.x * scale_amount,
+				r.y * scale_amount,
+				r.w * scale_amount,
+				r.h * scale_amount,
 			)
 
 
-		self.screen.fill(self.settings.colorBg.toTuple())
+		self.screen.fill(self.settings.color_bg.to_tuple())
 
 		for player in self.players:
 			player.draw(scaler)
 
-		self.physicalScreen.fill(self.settings.colorScreenOverflow.toTuple())
-		self.physicalScreen.blit(self.screen, self.screenOffset)
+		self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
+		self.physical_screen.blit(self.screen, self.screen_offset)
 		pygame.display.flip()
 
-	def _checkEvents(self) -> None:
+	def _check_events(self) -> None:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				self.exitGame()
+				self.exit_game()
 
 			elif event.type == pygame.KEYDOWN:
-				self._checkKeydownEvents(event)
+				self._check_keydown_events(event)
 			elif event.type == pygame.KEYUP:
-				self._checkKeyupEvents(event)
+				self._check_keyup_events(event)
 			elif event.type == pygame.WINDOWRESIZED:
-				self._resizeScreen(event)
+				self._resize_screen(event)
 				   
-	def _checkKeydownEvents(self, event: pygame.event.Event) -> None:
+	def _check_keydown_events(self, event: pygame.event.Event) -> None:
 		match event.key:
 			case keybinds.EXIT:
-				self.exitGame()
+				self.exit_game()
 
 			case keybinds.MOV_UP:
-				self.movementCodes[0] = 1
-				self.movementCodesDirty = True
+				self.movement_codes[0] = 1
+				self.movement_codes_dirty = True
 			case keybinds.MOV_DOWN:
-				self.movementCodes[1] = 1
-				self.movementCodesDirty = True
+				self.movement_codes[1] = 1
+				self.movement_codes_dirty = True
 			case keybinds.MOV_LEFT:
-				self.movementCodes[2] = 1
-				self.movementCodesDirty = True
+				self.movement_codes[2] = 1
+				self.movement_codes_dirty = True
 			case keybinds.MOV_RIGHT:
-				self.movementCodes[3] = 1
-				self.movementCodesDirty = True
+				self.movement_codes[3] = 1
+				self.movement_codes_dirty = True
 
 			case _:
 				pass
 
-	def _checkKeyupEvents(self, event: pygame.event.Event) -> None:
+	def _check_keyup_events(self, event: pygame.event.Event) -> None:
 		match event.key:
 			case keybinds.MOV_UP:
-				self.movementCodes[0] = 0
-				self.movementCodesDirty = True
+				self.movement_codes[0] = 0
+				self.movement_codes_dirty = True
 			case keybinds.MOV_DOWN:
-				self.movementCodes[1] = 0
-				self.movementCodesDirty = True
+				self.movement_codes[1] = 0
+				self.movement_codes_dirty = True
 			case keybinds.MOV_LEFT:
-				self.movementCodes[2] = 0
-				self.movementCodesDirty = True
+				self.movement_codes[2] = 0
+				self.movement_codes_dirty = True
 			case keybinds.MOV_RIGHT:
-				self.movementCodes[3] = 0
-				self.movementCodesDirty = True
+				self.movement_codes[3] = 0
+				self.movement_codes_dirty = True
 
 			case _:
 				pass
 	
-	def _resizeScreen(self, event: pygame.event.Event) -> None:
-		newX, newY = event.x, event.y
-		aspectRatio = newX / newY
+	def _resize_screen(self, event: pygame.event.Event) -> None:
+		newx, newy = event.x, event.y
+		aspectRatio = newx / newy
 
 		# more -> vertical bars
 		# less -> horizontal bars
-		if aspectRatio > self.settings.screenAspectRatio:
-			self.virtualScreenHeight = newY
-			self.virtualScreenWidth = self.settings.screenAspectRatio * newY
+		if aspectRatio > self.settings.screen_aspect_ratio:
+			self.virtual_screen_height = newy
+			self.virtual_screen_width = self.settings.screen_aspect_ratio * newy
 
-			barWidth = newX-self.virtualScreenWidth
-			self.screenOffset = (barWidth/2, 0)
+			bar_width = newx-self.virtual_screen_width
+			self.screen_offset = (bar_width/2, 0)
 			
 		else:
-			self.virtualScreenWidth = newX
-			self.virtualScreenHeight = newX / self.settings.screenAspectRatio
+			self.virtual_screen_width = newx
+			self.virtual_screen_height = newx / self.settings.screen_aspect_ratio
 		
-			barHeight = newY-self.virtualScreenHeight
-			self.screenOffset = (0, barHeight/2)
+			bar_height = newy-self.virtual_screen_height
+			self.screen_offset = (0, bar_height/2)
 
-		self.screen: pygame.Surface = pygame.Surface((self.virtualScreenWidth, self.virtualScreenHeight))
+		self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
 
 
-	def exitGame(self) -> None:
-		self.network.closeConnection()
+	def exit_game(self) -> None:
+		self.network.close_connection()
 		self.quit = True
 

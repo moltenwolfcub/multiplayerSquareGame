@@ -18,16 +18,16 @@ class ClientPlayer:
 
 		self.color: Color = color
 		
-		self.radius: int = self.game.settings.playerRadius
+		self.radius: int = self.game.settings.player_radius
 		self.rect = pygame.Rect(self.pos.x-self.radius, self.pos.y-self.radius, self.radius*2, self.radius*2)
 
 	def draw(self, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
-		drawRect = scaler(self.rect)
+		draw_rect = scaler(self.rect)
 
-		pygame.draw.rect(self.game.screen, self.color.toTuple(), drawRect)
+		pygame.draw.rect(self.game.screen, self.color.to_tuple(), draw_rect)
 	
 	@staticmethod
-	def fromCommon(common: CommonPlayer, game: 'Game') -> 'ClientPlayer':
+	def from_common(common: CommonPlayer, game: 'Game') -> 'ClientPlayer':
 		return ClientPlayer(game, common.pos, common.color)
 
 	def __str__(self) -> str:

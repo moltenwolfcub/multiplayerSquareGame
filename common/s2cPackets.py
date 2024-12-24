@@ -13,15 +13,15 @@ class S2CHandshake(Packet):
 		self.message: str = msg
 	
 	@override
-	def encodeData(self) -> bytes:
+	def encode_data(self) -> bytes:
 		return self.message.encode("utf-8")
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'S2CHandshake':
-		packetData = data[packetIDs.packetIDSize:]
+	def decode_data(data: bytes) -> 'S2CHandshake':
+		packet_data = data[packetIDs.packet_id_size:]
 
-		msg = packetData.decode("utf-8")
+		msg = packet_data.decode("utf-8")
 		return S2CHandshake(msg)
 	
 	def isCorrect(self) -> bool:
@@ -33,12 +33,12 @@ class S2CFailedHandshake(Packet):
 		super().__init__(packetIDs.S2C_HANDSHAKE_FAIL)
 	
 	@override
-	def encodeData(self) -> bytes:
+	def encode_data(self) -> bytes:
 		return bytes()
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'S2CHandshake':
+	def decode_data(data: bytes) -> 'S2CHandshake':
 		return S2CHandshake()
 
 
@@ -49,7 +49,7 @@ class S2CPlayers(Packet):
 		self.players = players
 
 	@override
-	def encodeData(self) -> bytes:
+	def encode_data(self) -> bytes:
 		b = bytes()
 		for player in self.players:
 			b += player.encode()
@@ -58,12 +58,12 @@ class S2CPlayers(Packet):
 
 	@override
 	@staticmethod
-	def decodeData(data: bytes) -> 'S2CPlayers':
-		packetData = data[packetIDs.packetIDSize:]
+	def decode_data(data: bytes) -> 'S2CPlayers':
+		packet_data = data[packetIDs.packet_id_size:]
 
-		playerList: list[CommonPlayer] = []
+		player_list: list[CommonPlayer] = []
 
-		players = [ packetData[i:i+CommonPlayer.ENCODED_SIZE] for i in range(0, len(packetData), CommonPlayer.ENCODED_SIZE) ]
+		players = [ packet_data[i:i+CommonPlayer.ENCODED_SIZE] for i in range(0, len(packet_data), CommonPlayer.ENCODED_SIZE) ]
 
 		for p in players:
 			if len(p) == 0:
@@ -71,6 +71,6 @@ class S2CPlayers(Packet):
 
 			player = CommonPlayer.decode(p)
 
-			playerList.append(player)
+			player_list.append(player)
 
-		return S2CPlayers(playerList)
+		return S2CPlayers(player_list)

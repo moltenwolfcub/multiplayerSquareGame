@@ -19,48 +19,48 @@ class GameData:
 	
 	def update(self) -> None:
 		
-		playersDirty = False
+		players_dirty = False
 		for player in self.players:
-			if player.movDir.isNone():
+			if player.mov_dir.isNone():
 				continue
 			
-			playersDirty = True
-			velocity: Vec2D = player.movDir * self.settings.playerSpeed
+			players_dirty = True
+			velocity: Vec2D = player.mov_dir * self.settings.player_speed
 
-			if player.movDir.x and player.movDir.y:
+			if player.mov_dir.x and player.mov_dir.y:
 				velocity = velocity / 1.2
 
-			newPos = player.pos + velocity
+			new_pos = player.pos + velocity
 
-			player.pos.x = min(self.settings.worldWidth  - self.settings.playerRadius, max(self.settings.playerRadius, newPos.x))
-			player.pos.y = min(self.settings.worldHeight - self.settings.playerRadius, max(self.settings.playerRadius, newPos.y))
+			player.pos.x = min(self.settings.world_width  - self.settings.player_radius, max(self.settings.player_radius, new_pos.x))
+			player.pos.y = min(self.settings.world_height - self.settings.player_radius, max(self.settings.player_radius, new_pos.y))
 
-		if playersDirty:
+		if players_dirty:
 			self.server.broadcast(S2CPlayers(self.players))
 
-	def addPlayer(self, player: CommonPlayer) -> None:
+	def add_player(self, player: CommonPlayer) -> None:
 		self.players.append(player)
 	
-	def addRandomPlayer(self, id: int) -> None:
-		self.addPlayer(CommonPlayer(
+	def add_random_player(self, id: int) -> None:
+		self.add_player(CommonPlayer(
 			id,
 			Vec2D(
-				random.randint(self.settings.playerRadius, self.settings.worldWidth-self.settings.playerRadius),
-				random.randint(self.settings.playerRadius, self.settings.worldHeight-self.settings.playerRadius)
+				random.randint(self.settings.player_radius, self.settings.world_width-self.settings.player_radius),
+				random.randint(self.settings.player_radius, self.settings.world_height-self.settings.player_radius)
 			),
 			Vec2D(0,0),
 			Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 		))
 	
-	def removePlayer(self, playerId: int) -> None:
-		player = self.getPlayer(playerId)
+	def remove_player(self, player_id: int) -> None:
+		player = self.get_player(player_id)
 		if player:
 			self.players.remove(player)
 	
-	def getPlayer(self, playerId: int) -> Optional[CommonPlayer]:
+	def get_player(self, player_id: int) -> Optional[CommonPlayer]:
 		for player in self.players:
-			if player.id == playerId:
+			if player.id == player_id:
 				return player # if more than 1 player with same ID something very wrong
 		
-		print(f"Couldn't find player with ID {playerId}")
+		print(f"Couldn't find player with ID {player_id}")
 		return None
