@@ -193,7 +193,7 @@ class Server:
             time_remaining_ns = self.game.settings.tick_time_ns - (tick_stop-tick_start)
 
             if time_remaining_ns > 0:
-                time.sleep(time_remaining_ns//1_000_000_000)
+                time.sleep(time_remaining_ns/1_000_000_000)
 
     def console_loop(self) -> None:
         '''Handles server console commands'''
