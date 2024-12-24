@@ -1,5 +1,4 @@
 import _thread
-import dataclasses
 import queue
 import socket
 import sys
@@ -256,7 +255,7 @@ class Server:
                     return LookupError()
 
                 print(f"Pow from {shooting_player.pos}")
-                self.game.bullets.append(CommonBullet(dataclasses.replace(shooting_player.pos)))
+                self.game.bullets.append(CommonBullet(shooting_player.pos.clone()))
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

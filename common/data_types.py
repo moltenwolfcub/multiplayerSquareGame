@@ -1,3 +1,4 @@
+import dataclasses
 import math
 from dataclasses import dataclass
 
@@ -50,6 +51,9 @@ class Vec2D:
             math.ceil(newx),
             math.ceil(newy),
         )
+    
+    def clone(self) -> 'Vec2D':
+        return dataclasses.replace(self)
 
 @dataclass
 class Color:
