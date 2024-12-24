@@ -1,4 +1,5 @@
 import _thread
+import dataclasses
 import queue
 import socket
 import sys
@@ -6,6 +7,7 @@ import time
 from typing import Optional
 
 from common import packet_ids
+from common.bullet import CommonBullet
 from common.c2s_packets import C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
@@ -254,6 +256,7 @@ class Server:
                     return LookupError()
 
                 print(f"Pow from {shooting_player.pos}")
+                self.game.bullets.append(CommonBullet(dataclasses.replace(shooting_player.pos)))
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

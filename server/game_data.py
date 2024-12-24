@@ -1,6 +1,7 @@
 import random
 from typing import TYPE_CHECKING, Optional
 
+from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
 from common.s2c_packets import S2CPlayers
@@ -16,6 +17,7 @@ class GameData:
         self.settings: Settings = Settings()
 
         self.players: list[CommonPlayer] = []
+        self.bullets: list[CommonBullet] = []
     
     def update(self) -> None:
         
@@ -37,6 +39,13 @@ class GameData:
 
         if players_dirty:
             self.server.broadcast(S2CPlayers(self.players))
+        
+        for bullet in self.bullets:
+            bullet.pos.y += 1
+            if bullet.pos.y > self.settings.world_height:
+                self.bullets.remove(bullet)
+                continue
+            print(f"Bullet: {bullet.pos}")
 
     def add_player(self, player: CommonPlayer) -> None:
         self.players.append(player)
