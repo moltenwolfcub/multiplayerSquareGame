@@ -11,8 +11,10 @@ if TYPE_CHECKING:
 class ClientPlayer:
     '''General player for rendering local and remote players'''
     
-    def __init__(self, game: 'Game', pos: Vec2D, color: Color) -> None:
+    def __init__(self, id: int, game: 'Game', pos: Vec2D, color: Color) -> None:
         self.game: Game = game
+
+        self.id: int = id
 
         self.pos: Vec2D = pos
 
@@ -28,7 +30,7 @@ class ClientPlayer:
     
     @staticmethod
     def from_common(common: CommonPlayer, game: 'Game') -> 'ClientPlayer':
-        return ClientPlayer(game, common.pos, common.color)
+        return ClientPlayer(id=common.id, game=game, pos=common.pos, color=common.color)
 
     def __str__(self) -> str:
-        return f"Player[pos=({self.pos})]"
+        return f"Player[id=({self.id}), pos=({self.pos}), color=({self.color})]"
