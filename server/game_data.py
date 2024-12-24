@@ -46,7 +46,6 @@ class GameData:
             if bullet.pos.y > self.settings.world_height:
                 self.bullets.remove(bullet)
                 self.server.broadcast(S2CBullets(self.bullets))
-                print("gone")
                 continue
         
 
