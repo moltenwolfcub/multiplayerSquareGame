@@ -44,11 +44,10 @@ class GameData:
         for bullet in self.bullets:
             bullets_dirty = True
 
-            bullet.pos.y += 1
+            bullet.pos.y += self.settings.bullet_speed
             if bullet.pos.y > self.settings.world_height:
                 self.bullets.remove(bullet)
                 continue
-            # print(f"Bullet: {bullet.pos}")
         
         if bullets_dirty:
             self.server.broadcast(S2CBullets(self.bullets))
