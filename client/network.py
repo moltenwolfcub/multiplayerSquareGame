@@ -150,6 +150,6 @@ class Network:
 
             self.game.movement_codes_dirty = False
         
-        if self.game.is_shooting:
+        if self.game.shoot_angle != -1:
             self.send(C2SCreateBullet())
-            self.game.is_shooting = False
+            self.game.shoot_angle = -1

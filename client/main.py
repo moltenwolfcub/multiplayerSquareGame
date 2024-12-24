@@ -49,7 +49,7 @@ class Game:
         self.movement_codes: list[int] = [0, 0, 0, 0]
         self.movement_codes_dirty: bool = False
 
-        self.is_shooting: bool = False
+        self.shoot_angle: int = -1
 
         self.quit = False
 
@@ -127,7 +127,7 @@ class Game:
                 self.movement_codes_dirty = True
             
             case keybinds.SHOOT:
-                self.is_shooting = True
+                self.shoot()
 
             case _:
                 pass
@@ -176,4 +176,12 @@ class Game:
     def exit_game(self) -> None:
         self.network.close_connection()
         self.quit = True
+    
+    def shoot(self) -> None:
+        if not pygame.mouse.get_focused():
+            return # mouse not on screen
+        
+        # mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        self.shoot_angle = 1
 
