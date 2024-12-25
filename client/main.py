@@ -1,6 +1,7 @@
 import _thread
 import math
 import sys
+from typing import Optional
 
 import pygame
 
@@ -21,7 +22,7 @@ class Game:
         self.settings: Settings = Settings()
         
         self.this_player_id: int = -1
-        
+
         self.initialise_network(port)
 
         # region SCREEN-SETUP
@@ -185,8 +186,18 @@ class Game:
 
         return world_vec
 
-    def get_this_player(self) -> ClientPlayer:
-        return self.players[self.this_player_id]
+    def get_this_player(self) -> Optional[ClientPlayer]:
+        if self.this_player_id == -1:
+            print("ID hasn't been set yet")
+            return None
+
+        for p in self.players:
+            if p.id == self.this_player_id:
+                return p
+        else:
+            print("Couldn't find this_player")
+            return None
+        # return self.players[self.this_player_id]
 
     def exit_game(self) -> None:
         self.network.close_connection()
@@ -199,7 +210,10 @@ class Game:
         raw_mouse_pos: Vec2D = Vec2D.from_tuple(pygame.mouse.get_pos())
         mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
         
-        player_pos: Vec2D = self.get_this_player().pos
+        this_player: Optional[ClientPlayer] = self.get_this_player()
+        if this_player is None:
+            return # can't find self to shoot from
+        player_pos = this_player.pos
 
         print(self.this_player_id)
 
