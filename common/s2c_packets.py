@@ -109,3 +109,22 @@ class S2CBullets(Packet):
             bullet_list.append(bullet)
 
         return S2CBullets(bullet_list)
+
+class S2CSendID(Packet):
+
+    def __init__(self, id: int) -> None:
+        super().__init__(packet_ids.S2C_SEND_ID)
+
+        self.player_id: int = id
+    
+    @override
+    def encode_data(self) -> bytes:
+        return self.player_id.to_bytes(1)
+
+    @override
+    @staticmethod
+    def decode_data(data: bytes) -> 'S2CSendID':
+        packet_data = data[packet_ids.packet_id_size:]
+
+        player_id = int.from_bytes(packet_data)
+        return S2CSendID(player_id)

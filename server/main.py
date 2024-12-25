@@ -10,7 +10,7 @@ from common.bullet import CommonBullet
 from common.c2s_packets import C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
 from server.game_data import GameData
 from server.raw_packet import RawPacket
 
@@ -167,6 +167,7 @@ class Server:
     def on_client_join(self, conn: socket.socket) -> None:
         id = self.get_free_id()
         self.open_connections[conn] = id
+        PacketHeader.send_packet(conn, S2CSendID(id))
 
         self.game.add_random_player(id)
 

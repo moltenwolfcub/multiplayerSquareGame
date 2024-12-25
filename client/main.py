@@ -41,6 +41,8 @@ class Game:
 
         # endregion
 
+        self.this_player_id: int = -1
+
         self.players: list[ClientPlayer] = []
         self.network.send(C2SRequestPlayerList())
 

@@ -10,7 +10,7 @@ from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.data_types import Vec2D
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
 
 if TYPE_CHECKING:
     from client.main import Game
@@ -137,6 +137,11 @@ class Network:
                     client_bullets.append(ClientBullet.from_common(common_bullet, self.game))
                 
                 self.game.bullets = client_bullets
+            
+            case packet_ids.S2C_SEND_ID:
+                id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
+
+                self.game.this_player_id =  id_packet.player_id
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
