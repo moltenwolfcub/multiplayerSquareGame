@@ -34,9 +34,9 @@ class s2cPackets(unittest.TestCase):
 
     def testBulletsPacket(self):
         packet = S2CBullets([
-            CommonBullet(Vec2D(128,  16)),
-            CommonBullet(Vec2D(  0, 250)),
-            CommonBullet(Vec2D(830, 678)),
+            CommonBullet(Vec2D(128,  16), -1),
+            CommonBullet(Vec2D(  0, 250), -1),
+            CommonBullet(Vec2D(830, 678), -1),
         ])
 
         encoded = packet.encode()

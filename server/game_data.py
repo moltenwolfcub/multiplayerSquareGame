@@ -1,5 +1,8 @@
+import math
 import random
 from typing import TYPE_CHECKING, Optional
+
+import pygame
 
 from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
@@ -42,10 +45,18 @@ class GameData:
         
         bullet_dirty = False
         for bullet in self.bullets:
-            bullet.pos.y += self.settings.bullet_speed
+
+            # pol to cart
+            shifted_angle: float = (bullet.shoot_angle / 100) - 90
+
+            rawx = int(self.settings.bullet_speed * math.cos(math.radians(shifted_angle)))
+            rawy = int(self.settings.bullet_speed * math.sin(math.radians(shifted_angle)))
+
+            bullet.pos += Vec2D(rawx, rawy)
+
             bullet_dirty = True
 
-            if bullet.pos.y > self.settings.world_height:
+            if not bullet.pos.in_rect(pygame.Rect(0, 0, self.settings.world_width, self.settings.world_height)):
                 self.bullets.remove(bullet)
                 continue
         

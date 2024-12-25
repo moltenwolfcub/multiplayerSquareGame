@@ -7,7 +7,7 @@ from typing import Optional
 
 from common import packet_ids
 from common.bullet import CommonBullet
-from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
@@ -257,13 +257,15 @@ class Server:
                 player.mov_dir = movement_packet.mov_dir
             
             case packet_ids.C2S_CREATE_BULLET:
+                bullet_packet: C2SCreateBullet = C2SCreateBullet.decode_data(raw_packet.data)
+
                 shooting_player = self.game.get_player(self.open_connections[raw_packet.sender])
 
                 if shooting_player is None:
                     print(f"Error! No player assosiated with connection: {raw_packet.sender}")
                     return LookupError()
 
-                self.game.bullets.append(CommonBullet(shooting_player.pos.clone()))
+                self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
 
                 self.broadcast(S2CBullets(self.game.bullets))
 

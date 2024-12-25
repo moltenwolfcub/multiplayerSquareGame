@@ -2,6 +2,8 @@ import dataclasses
 import math
 from dataclasses import dataclass
 
+import pygame
+
 
 @dataclass
 class Vec2D:
@@ -13,6 +15,9 @@ class Vec2D:
 
     def is_none(self) -> bool:
         return self.x == 0 and self.y == 0
+    
+    def in_rect(self, rect: pygame.Rect) -> bool:
+        return rect.collidepoint(self.x, self.y)
 
     def to_tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
