@@ -1,4 +1,5 @@
 import _thread
+import math
 import sys
 
 import pygame
@@ -9,6 +10,7 @@ from client.network import Network
 from client.player import ClientPlayer
 from client.settings import Settings
 from common.c2s_packets import C2SRequestPlayerList
+from common.data_types import Vec2D
 
 
 class Game:
@@ -37,7 +39,7 @@ class Game:
 
         # this is the virtual screen
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
-        self.screen_offset: tuple[int,int] = (0, 0)
+        self.screen_offset: Vec2D = Vec2D(0, 0)
 
         # endregion
 
@@ -51,7 +53,7 @@ class Game:
         self.movement_codes: list[int] = [0, 0, 0, 0]
         self.movement_codes_dirty: bool = False
 
-        self.shoot_angle: int = -1
+        self.shoot_angle: float = -1
 
         self.quit = False
 
@@ -95,7 +97,7 @@ class Game:
 
 
         self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
-        self.physical_screen.blit(self.screen, self.screen_offset)
+        self.physical_screen.blit(self.screen, self.screen_offset.to_tuple())
         pygame.display.flip()
 
     def _check_events(self) -> None:
@@ -154,26 +156,37 @@ class Game:
     
     def _resize_screen(self, event: pygame.event.Event) -> None:
         newx, newy = event.x, event.y
-        aspectRatio = newx / newy
+        aspect_ratio = newx / newy
 
         # more -> vertical bars
         # less -> horizontal bars
-        if aspectRatio > self.settings.screen_aspect_ratio:
+        if aspect_ratio > self.settings.screen_aspect_ratio:
             self.virtual_screen_height = newy
             self.virtual_screen_width = self.settings.screen_aspect_ratio * newy
 
             bar_width = newx-self.virtual_screen_width
-            self.screen_offset = (bar_width/2, 0)
+            self.screen_offset = Vec2D(bar_width/2, 0)
             
         else:
             self.virtual_screen_width = newx
             self.virtual_screen_height = newx / self.settings.screen_aspect_ratio
         
             bar_height = newy-self.virtual_screen_height
-            self.screen_offset = (0, bar_height/2)
+            self.screen_offset = Vec2D(0, bar_height/2)
 
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
 
+
+    def screen_to_world(self, screen: Vec2D) -> Vec2D:
+        scalar: float = self.virtual_screen_width / self.settings.screen_width
+
+        screen = screen - self.screen_offset
+        world_vec: Vec2D = screen/scalar
+
+        return world_vec
+
+    def get_this_player(self) -> ClientPlayer:
+        return self.players[self.this_player_id]
 
     def exit_game(self) -> None:
         self.network.close_connection()
@@ -183,7 +196,36 @@ class Game:
         if not pygame.mouse.get_focused():
             return # mouse not on screen
         
-        # mouse_x, mouse_y = pygame.mouse.get_pos()
+        raw_mouse_pos: Vec2D = Vec2D.from_tuple(pygame.mouse.get_pos())
+        mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
+        
+        player_pos: Vec2D = self.get_this_player().pos
 
-        self.shoot_angle = 1
+        shoot_vec: Vec2D = mouse_pos-player_pos
+        x, y = shoot_vec.x, shoot_vec.y
+
+        if x == y == 0:
+            return # no direction because mouse exactly on player
+        
+        alpha: float
+        if x == 0 or y == 0:
+            alpha = 0
+        else:
+            abs_x, abs_y = abs(x), abs(y)
+
+            if x/abs_x == y/abs_y:
+                alpha = math.atan(abs_y / abs_x)
+            else:
+                alpha = math.atan(abs_x / abs_y)
+        
+        alpha = math.degrees(alpha)
+        
+        if x >= 0 and y < 0:
+            self.shoot_angle = 0 + alpha
+        elif x > 0 and y >= 0:
+            self.shoot_angle = 90 + alpha
+        elif x <= 0 and y > 0:
+            self.shoot_angle = 180 + alpha
+        elif x < 0 and y <= 0:
+            self.shoot_angle = 270 + alpha
 
