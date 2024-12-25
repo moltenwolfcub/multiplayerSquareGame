@@ -11,7 +11,7 @@ class Vec2D:
     def clone(self) -> 'Vec2D':
         return dataclasses.replace(self)
 
-    def isNone(self) -> bool:
+    def is_none(self) -> bool:
         return self.x == 0 and self.y == 0
 
     def to_tuple(self) -> tuple[int, int]:

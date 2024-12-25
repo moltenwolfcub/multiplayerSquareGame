@@ -23,7 +23,7 @@ class GameData:
         
         players_dirty = False
         for player in self.players:
-            if player.mov_dir.isNone():
+            if player.mov_dir.is_none():
                 continue
             
             players_dirty = True
