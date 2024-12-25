@@ -156,5 +156,7 @@ class Network:
             self.game.movement_codes_dirty = False
         
         if self.game.shoot_angle != -1:
-            self.send(C2SCreateBullet())
+            roundedAngle: int = int(self.game.shoot_angle * 100) # fixed point decimal of angle 00000-36000
+
+            self.send(C2SCreateBullet(roundedAngle))
             self.game.shoot_angle = -1

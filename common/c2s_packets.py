@@ -108,14 +108,22 @@ class C2SMovementUpdate(Packet):
 
 class C2SCreateBullet(Packet):
 
-    def __init__(self) -> None:
+    def __init__(self, angle: int) -> None:
         super().__init__(packet_ids.C2S_CREATE_BULLET)
+
+        self.angle: int = angle
 
     @override
     def encode_data(self) -> bytes:
-        return bytes()
+        b = self.angle.to_bytes(2)
+
+        return b
 
     @override
     @staticmethod
     def decode_data(data: bytes) -> 'C2SCreateBullet':
-        return C2SCreateBullet()
+        packet_data = data[packet_ids.packet_id_size:]
+
+        angle: int = int.from_bytes(packet_data)
+
+        return C2SCreateBullet(angle)
