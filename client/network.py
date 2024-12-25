@@ -142,6 +142,7 @@ class Network:
                 id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
 
                 self.game.this_player_id =  id_packet.player_id
+                print(f"SET ID {self.game.this_player_id}")
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

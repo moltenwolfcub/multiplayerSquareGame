@@ -20,6 +20,8 @@ class Game:
 
         self.settings: Settings = Settings()
         
+        self.this_player_id: int = -1
+        
         self.initialise_network(port)
 
         # region SCREEN-SETUP
@@ -42,8 +44,6 @@ class Game:
         self.screen_offset: Vec2D = Vec2D(0, 0)
 
         # endregion
-
-        self.this_player_id: int = -1
 
         self.players: list[ClientPlayer] = []
         self.network.send(C2SRequestPlayerList())
@@ -200,6 +200,8 @@ class Game:
         mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
         
         player_pos: Vec2D = self.get_this_player().pos
+
+        print(self.this_player_id)
 
         shoot_vec: Vec2D = mouse_pos-player_pos
         x, y = shoot_vec.x, shoot_vec.y
