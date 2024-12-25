@@ -215,8 +215,6 @@ class Game:
             return # can't find self to shoot from
         player_pos = this_player.pos
 
-        print(self.this_player_id)
-
         shoot_vec: Vec2D = mouse_pos-player_pos
         x, y = shoot_vec.x, shoot_vec.y
 
