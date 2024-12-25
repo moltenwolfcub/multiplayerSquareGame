@@ -90,11 +90,11 @@ class Game:
 
         self.screen.fill(self.settings.color_bg.to_tuple())
 
-        for player in self.players:
-            player.draw(scaler)
-
         for bullet in self.bullets:
             bullet.draw(scaler)
+
+        for player in self.players:
+            player.draw(scaler)
 
 
         self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
