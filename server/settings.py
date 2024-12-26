@@ -2,7 +2,7 @@
 class Settings:
 
     def __init__(self) -> None:
-        self.tps: int = 20
+        self.tps: int = 60
         self.tick_time_ns: int = 1_000_000_000 // self.tps
 
         # worldSize
@@ -12,3 +12,6 @@ class Settings:
         # player
         self.player_radius: int = 50
         self.player_speed: int = 3
+
+        #bullet
+        self.bullet_speed: int = 10

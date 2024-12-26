@@ -18,3 +18,6 @@ class Settings:
 
         # player
         self.player_radius: int = 50
+
+        # bullet
+        self.bullet_speed: int = 10

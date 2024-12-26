@@ -3,13 +3,14 @@ import socket
 import sys
 from typing import TYPE_CHECKING, Optional
 
+from client.bullet import ClientBullet
 from client.player import ClientPlayer
 from common import packet_ids
-from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.data_types import Vec2D
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
 
 if TYPE_CHECKING:
     from client.main import Game
@@ -126,6 +127,21 @@ class Network:
                     client_players.append(ClientPlayer.from_common(common_player, self.game))
                 
                 self.game.players = client_players
+            
+            case packet_ids.S2C_BULLETS:
+                bullets_packet: S2CBullets = S2CBullets.decode_data(raw_packet)
+                
+                client_bullets: list[ClientBullet] = []
+
+                for common_bullet in bullets_packet.bullets:
+                    client_bullets.append(ClientBullet.from_common(common_bullet, self.game))
+                
+                self.game.bullets = client_bullets
+            
+            case packet_ids.S2C_SEND_ID:
+                id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
+
+                self.game.this_player_id =  id_packet.player_id
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
@@ -138,3 +154,9 @@ class Network:
             self.send(C2SMovementUpdate(Vec2D(dx,dy)))
 
             self.game.movement_codes_dirty = False
+        
+        if self.game.shoot_angle != -1:
+            roundedAngle: int = int(self.game.shoot_angle * 100) # fixed point decimal of angle 00000-36000
+
+            self.send(C2SCreateBullet(roundedAngle))
+            self.game.shoot_angle = -1

@@ -1,11 +1,30 @@
+import dataclasses
 import math
 from dataclasses import dataclass
+
+import pygame
 
 
 @dataclass
 class Vec2D:
     x: int
     y: int
+    
+    def clone(self) -> 'Vec2D':
+        return dataclasses.replace(self)
+
+    def is_none(self) -> bool:
+        return self.x == 0 and self.y == 0
+    
+    def in_rect(self, rect: pygame.Rect) -> bool:
+        return rect.collidepoint(self.x, self.y)
+
+    def to_tuple(self) -> tuple[int, int]:
+        return (self.x, self.y)
+
+    @staticmethod
+    def from_tuple(tup: tuple[int,int]) -> 'Vec2D':
+        return Vec2D(x=tup[0], y=tup[1])
 
     def __mul__(self, scalar: int) -> 'Vec2D':
         return Vec2D(
@@ -21,9 +40,6 @@ class Vec2D:
             self.x + other.x,
             self.y + other.y,
         )
-    
-    def isNone(self) -> bool:
-        return self.x == 0 and self.y == 0
     
     def __floordiv__(self, divisor: float) -> 'Vec2D':
         return Vec2D(
@@ -49,6 +65,12 @@ class Vec2D:
         return Vec2D(
             math.ceil(newx),
             math.ceil(newy),
+        )
+    
+    def __sub__(self, other: 'Vec2D') -> 'Vec2D':
+        return Vec2D(
+            self.x - other.x,
+            self.y - other.y,
         )
 
 @dataclass

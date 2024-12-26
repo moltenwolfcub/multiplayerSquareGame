@@ -6,10 +6,11 @@ import time
 from typing import Optional
 
 from common import packet_ids
-from common.c2s_packets import C2SHandshake, C2SMovementUpdate
+from common.bullet import CommonBullet
+from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CFailedHandshake, S2CHandshake, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
 from server.game_data import GameData
 from server.raw_packet import RawPacket
 
@@ -166,6 +167,7 @@ class Server:
     def on_client_join(self, conn: socket.socket) -> None:
         id = self.get_free_id()
         self.open_connections[conn] = id
+        PacketHeader.send_packet(conn, S2CSendID(id))
 
         self.game.add_random_player(id)
 
@@ -192,7 +194,7 @@ class Server:
             time_remaining_ns = self.game.settings.tick_time_ns - (tick_stop-tick_start)
 
             if time_remaining_ns > 0:
-                time.sleep(time_remaining_ns//1_000_000_000)
+                time.sleep(time_remaining_ns/1_000_000_000)
 
     def console_loop(self) -> None:
         '''Handles server console commands'''
@@ -211,6 +213,14 @@ class Server:
                     if len(self.game.players) == 0:
                         print("empty")
 
+                case "b" | "bullets":
+                    print("BULLETS:")
+                    for b in self.game.bullets:
+                        print(f"- {b}")
+
+                    if len(self.game.bullets) == 0:
+                        print("empty")
+
                 case "c" | "connections":
                     print("CONNECTIONS:")
                     for c, id in self.open_connections.items():
@@ -222,29 +232,42 @@ class Server:
                 case _:
                     pass
 
-    def handle_packet(self, rawPacket: RawPacket) -> Optional[Exception]:
-        packet_type: int = Packet.decode_id(rawPacket.data)
+    def handle_packet(self, raw_packet: RawPacket) -> Optional[Exception]:
+        packet_type: int = Packet.decode_id(raw_packet.data)
 
         match packet_type:
             case packet_ids.C2S_HANDSHAKE:
-                handshake_packet: C2SHandshake = C2SHandshake.decode_data(rawPacket.data)
+                handshake_packet: C2SHandshake = C2SHandshake.decode_data(raw_packet.data)
 
                 if not handshake_packet.isCorrect():
                     print("Error during handshake")
                     return ConnectionError()
             
             case packet_ids.C2S_PLAYER_REQUEST:
-                PacketHeader.send_packet(rawPacket.sender, S2CPlayers(self.game.players))
+                PacketHeader.send_packet(raw_packet.sender, S2CPlayers(self.game.players))
             
             case packet_ids.C2S_MOVEMENT_UPDATE:
-                movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(rawPacket.data)
+                movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(raw_packet.data)
 
-                player = self.game.get_player(self.open_connections[rawPacket.sender])
+                player = self.game.get_player(self.open_connections[raw_packet.sender])
                 if player is None:
-                    print(f"Error! No player assosiated with connection: {rawPacket.sender}")
+                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
                     return LookupError()
                 
                 player.mov_dir = movement_packet.mov_dir
+            
+            case packet_ids.C2S_CREATE_BULLET:
+                bullet_packet: C2SCreateBullet = C2SCreateBullet.decode_data(raw_packet.data)
+
+                shooting_player = self.game.get_player(self.open_connections[raw_packet.sender])
+
+                if shooting_player is None:
+                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
+                    return LookupError()
+
+                self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
+
+                self.broadcast(S2CBullets(self.game.bullets))
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
