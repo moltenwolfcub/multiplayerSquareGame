@@ -1,9 +1,5 @@
 import argparse
 
-from client.main import Game
-from server.main import Server
-
-
 def main() -> None:
 
     args = parse_args()
@@ -14,6 +10,7 @@ def main() -> None:
         server = True
 
     if server:
+        from server.main import Server
         port: int = 0
         if args.port is not None:
             port = args.port
@@ -21,6 +18,7 @@ def main() -> None:
         s: Server = Server(port)
         s.start()
     else:
+        from client.main import Game
         if args.port is None:
             print("No port provided to connect to")
         
