@@ -1,8 +1,3 @@
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import pygame
-
 import dataclasses
 import math
 from dataclasses import dataclass
@@ -18,9 +13,6 @@ class Vec2D:
 
     def is_none(self) -> bool:
         return self.x == 0 and self.y == 0
-    
-    def in_rect(self, rect: 'pygame.Rect') -> bool:
-        return rect.collidepoint(self.x, self.y)
 
     def to_tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
@@ -75,6 +67,14 @@ class Vec2D:
             self.x - other.x,
             self.y - other.y,
         )
+
+@dataclass
+class Rect:
+    min: Vec2D
+    max: Vec2D
+    
+    def contains(self, point: Vec2D) -> bool:
+        return self.min.x < point.x < self.max.x and self.min.y < point.y < self.max.y
 
 @dataclass
 class Color:

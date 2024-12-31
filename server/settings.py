@@ -1,4 +1,7 @@
 
+from common.data_types import Rect, Vec2D
+
+
 class Settings:
 
     def __init__(self) -> None:
@@ -8,6 +11,8 @@ class Settings:
         # worldSize
         self.world_width: int = 1600
         self.world_height: int = 900
+
+        self.world_rect: Rect = Rect(Vec2D(0, 0), Vec2D(self.world_width, self.world_height))
 
         # player
         self.player_radius: int = 50

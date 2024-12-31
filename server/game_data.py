@@ -2,8 +2,6 @@ import math
 import random
 from typing import TYPE_CHECKING, Optional
 
-import pygame
-
 from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
@@ -56,7 +54,7 @@ class GameData:
 
             bullet_dirty = True
 
-            if not bullet.pos.in_rect(pygame.Rect(0, 0, self.settings.world_width, self.settings.world_height)):
+            if not self.settings.world_rect.contains(bullet.pos):
                 self.bullets.remove(bullet)
                 continue
         
