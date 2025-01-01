@@ -2,7 +2,6 @@ import sys
 
 import pygame
 
-from client import keybinds
 from client.game import Game
 from client.settings import Settings
 from common.data_types import Vec2D
@@ -14,7 +13,7 @@ class Client:
         pygame.init()
 
         self.settings: Settings = Settings()
-        self.game: Game = Game(port, self.settings)
+        self.game: Game = Game(port, self.settings, self.get_mouse_pos)
 
         # region SCREEN-SETUP
 
@@ -43,7 +42,7 @@ class Client:
     def run(self) -> None:
         while not self.quit:
             self._check_events()
-            self.game.network.send_updates()
+            self.game.tick()
             self._update_screen()
 
         sys.exit()
@@ -79,60 +78,17 @@ class Client:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.exit_game()
-
-            elif event.type == pygame.KEYDOWN:
-                self._check_keydown_events(event)
-            elif event.type == pygame.KEYUP:
-                self._check_keyup_events(event)
+                continue
             elif event.type == pygame.WINDOWRESIZED:
                 self._resize_screen(event)
-                   
-    def _check_keydown_events(self, event: pygame.event.Event) -> None:
-        match event.key:
-            case keybinds.EXIT:
-                self.exit_game()
-
-            case keybinds.MOV_UP:
-                self.game.movement_codes[0] = 1
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_DOWN:
-                self.game.movement_codes[1] = 1
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_LEFT:
-                self.game.movement_codes[2] = 1
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_RIGHT:
-                self.game.movement_codes[3] = 1
-                self.game.movement_codes_dirty = True
+                continue
             
-            case keybinds.SHOOT:
-                if not pygame.mouse.get_focused():
-                    return # mouse not on screen
-                
-                raw_mouse_pos: Vec2D = Vec2D.from_tuple(pygame.mouse.get_pos())
-                mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
-                self.game.shoot(mouse_pos)
-
-            case _:
-                pass
-
-    def _check_keyup_events(self, event: pygame.event.Event) -> None:
-        match event.key:
-            case keybinds.MOV_UP:
-                self.game.movement_codes[0] = 0
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_DOWN:
-                self.game.movement_codes[1] = 0
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_LEFT:
-                self.game.movement_codes[2] = 0
-                self.game.movement_codes_dirty = True
-            case keybinds.MOV_RIGHT:
-                self.game.movement_codes[3] = 0
-                self.game.movement_codes_dirty = True
-
-            case _:
-                pass
+            feedback_code = self.game.check_event(event)
+            match feedback_code:
+                case 1:
+                    self.exit_game()
+                case 0 | _:
+                    pass
     
     def _resize_screen(self, event: pygame.event.Event) -> None:
         newx, newy = event.x, event.y
@@ -164,6 +120,11 @@ class Client:
         world_vec: Vec2D = screen/scalar
 
         return world_vec
+    
+    def get_mouse_pos(self) -> Vec2D:
+        raw_mouse_pos: Vec2D = Vec2D.from_tuple(pygame.mouse.get_pos())
+        mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
+        return mouse_pos
 
     def exit_game(self) -> None:
         self.game.network.close_connection()

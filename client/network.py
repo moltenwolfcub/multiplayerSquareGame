@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from client.bullet import ClientBullet
 from client.player import ClientPlayer
 from common import packet_ids
-from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
-from common.data_types import Vec2D
+from common.c2s_packets import C2SHandshake
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
@@ -146,17 +145,3 @@ class Network:
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
                 return ConnectionError()
-    
-    def send_updates(self) -> None:
-        if self.game.movement_codes_dirty:
-            dx = self.game.movement_codes[3] - self.game.movement_codes[2]
-            dy = self.game.movement_codes[1] - self.game.movement_codes[0]
-            self.send(C2SMovementUpdate(Vec2D(dx,dy)))
-
-            self.game.movement_codes_dirty = False
-        
-        if self.game.shoot_angle != -1:
-            roundedAngle: int = int(self.game.shoot_angle * 100) # fixed point decimal of angle 00000-36000
-
-            self.send(C2SCreateBullet(roundedAngle))
-            self.game.shoot_angle = -1
