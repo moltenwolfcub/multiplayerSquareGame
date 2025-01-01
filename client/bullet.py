@@ -6,13 +6,13 @@ from common.bullet import CommonBullet
 from common.data_types import Vec2D
 
 if TYPE_CHECKING:
-    from client.main import Game
+    from client.main import Client
 
 
 class ClientBullet:
 
-    def __init__(self, game: 'Game', pos: Vec2D) -> None:
-        self.game: Game = game
+    def __init__(self, client: 'Client', pos: Vec2D) -> None:
+        self.client: Client = client
 
         self.pos: Vec2D = pos
 
@@ -23,8 +23,8 @@ class ClientBullet:
     def draw(self, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
         draw_rect = scaler(self.rect)
 
-        pygame.draw.circle(self.game.screen, (0, 0, 0), draw_rect.center, self.radius)
+        pygame.draw.circle(self.client.screen, (0, 0, 0), draw_rect.center, self.radius)
     
     @staticmethod
-    def from_common(common: CommonBullet, game: 'Game') -> 'ClientBullet':
-        return ClientBullet(game, common.pos)
+    def from_common(common: CommonBullet, client: 'Client') -> 'ClientBullet':
+        return ClientBullet(client, common.pos)

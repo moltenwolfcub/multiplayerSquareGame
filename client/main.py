@@ -14,7 +14,7 @@ from common.c2s_packets import C2SRequestPlayerList
 from common.data_types import Vec2D
 
 
-class Game:
+class Client:
 
     def __init__(self, port: int) -> None:
         pygame.init()

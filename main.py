@@ -18,12 +18,12 @@ def main() -> None:
         s: Server = Server(port)
         s.start()
     else:
-        from client.main import Game
+        from client.main import Client
         if args.port is None:
             print("No port provided to connect to")
         
         else:
-            g: Game = Game(args.port)
+            g: Client = Client(args.port)
             g.run()
 
 def parse_args() -> argparse.Namespace:
