@@ -13,11 +13,11 @@ from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
 
 if TYPE_CHECKING:
-    from client.main import Client
+    from client.game import Game
 
 class Network:
-    def __init__(self, client: 'Client', port: int) -> None:
-        self.client = client
+    def __init__(self, game: 'Game', port: int) -> None:
+        self.game = game
 
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serverAddr: str = "127.0.0.1"
@@ -124,9 +124,9 @@ class Network:
                 client_players: list[ClientPlayer] = []
 
                 for common_player in players_packet.players:
-                    client_players.append(ClientPlayer.from_common(common_player, self.client))
+                    client_players.append(ClientPlayer.from_common(common_player, self.game.settings))
                 
-                self.client.players = client_players
+                self.game.players = client_players
             
             case packet_ids.S2C_BULLETS:
                 bullets_packet: S2CBullets = S2CBullets.decode_data(raw_packet)
@@ -134,29 +134,29 @@ class Network:
                 client_bullets: list[ClientBullet] = []
 
                 for common_bullet in bullets_packet.bullets:
-                    client_bullets.append(ClientBullet.from_common(common_bullet, self.client))
+                    client_bullets.append(ClientBullet.from_common(common_bullet))
                 
-                self.client.bullets = client_bullets
+                self.game.bullets = client_bullets
             
             case packet_ids.S2C_SEND_ID:
                 id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
 
-                self.client.this_player_id =  id_packet.player_id
+                self.game.this_player_id =  id_packet.player_id
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
                 return ConnectionError()
     
     def send_updates(self) -> None:
-        if self.client.movement_codes_dirty:
-            dx = self.client.movement_codes[3] - self.client.movement_codes[2]
-            dy = self.client.movement_codes[1] - self.client.movement_codes[0]
+        if self.game.movement_codes_dirty:
+            dx = self.game.movement_codes[3] - self.game.movement_codes[2]
+            dy = self.game.movement_codes[1] - self.game.movement_codes[0]
             self.send(C2SMovementUpdate(Vec2D(dx,dy)))
 
-            self.client.movement_codes_dirty = False
+            self.game.movement_codes_dirty = False
         
-        if self.client.shoot_angle != -1:
-            roundedAngle: int = int(self.client.shoot_angle * 100) # fixed point decimal of angle 00000-36000
+        if self.game.shoot_angle != -1:
+            roundedAngle: int = int(self.game.shoot_angle * 100) # fixed point decimal of angle 00000-36000
 
             self.send(C2SCreateBullet(roundedAngle))
-            self.client.shoot_angle = -1
+            self.game.shoot_angle = -1
