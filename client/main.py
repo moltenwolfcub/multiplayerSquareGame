@@ -2,7 +2,7 @@ import sys
 
 import pygame
 
-from client.game import Game
+from client.game_page import GamePage
 from client.settings import Settings
 from common.data_types import Vec2D
 
@@ -11,8 +11,8 @@ class Client:
 
     def __init__(self, port: int) -> None:
         pygame.init()
-
-        self.game: Game = Game(port, self.get_mouse_pos)
+        
+        self.page: GamePage = GamePage(port, self.get_mouse_pos)
 
         # region SCREEN-SETUP
 
@@ -41,7 +41,7 @@ class Client:
     def run(self) -> None:
         while not self.quit:
             self._check_events()
-            self.game.tick()
+            self.page.update()
             self._update_screen()
 
         sys.exit()
@@ -58,15 +58,9 @@ class Client:
                 r.w * scale_amount,
                 r.h * scale_amount,
             )
-
-
-        self.screen.fill(Settings.color_bg.to_tuple())
-
-        for bullet in self.game.bullets:
-            bullet.draw(scaler=scaler, screen=self.screen)
-
-        for player in self.game.players:
-            player.draw(scaler=scaler, screen=self.screen)
+        
+        
+        self.page.draw(self.screen, scaler)
 
 
         self.physical_screen.fill(Settings.color_screen_overflow.to_tuple())
@@ -82,7 +76,7 @@ class Client:
                 self._resize_screen(event)
                 continue
             
-            feedback_code = self.game.check_event(event)
+            feedback_code = self.page.check_event(event)
             match feedback_code:
                 case 1:
                     self.exit_game()
@@ -126,6 +120,6 @@ class Client:
         return mouse_pos
 
     def exit_game(self) -> None:
-        self.game.network.close_connection()
+        self.page.close()
         self.quit = True
 
