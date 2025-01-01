@@ -8,15 +8,13 @@ from client import keybinds
 from client.bullet import ClientBullet
 from client.network import Network
 from client.player import ClientPlayer
-from client.settings import Settings
 from common.c2s_packets import C2SCreateBullet, C2SMovementUpdate, C2SRequestPlayerList
 from common.data_types import Vec2D
 
 
 class Game:
     
-    def __init__(self, port: int, settings: Settings, mouse_getter: Callable[[], Vec2D]) -> None:
-        self.settings: Settings = settings
+    def __init__(self, port: int, mouse_getter: Callable[[], Vec2D]) -> None:
         self.mouse_getter: Callable[[], Vec2D] = mouse_getter
         
         self.this_player_id: int = -1

@@ -123,7 +123,7 @@ class Network:
                 client_players: list[ClientPlayer] = []
 
                 for common_player in players_packet.players:
-                    client_players.append(ClientPlayer.from_common(common_player, self.game.settings))
+                    client_players.append(ClientPlayer.from_common(common_player))
                 
                 self.game.players = client_players
             

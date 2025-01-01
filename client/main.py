@@ -12,8 +12,7 @@ class Client:
     def __init__(self, port: int) -> None:
         pygame.init()
 
-        self.settings: Settings = Settings()
-        self.game: Game = Game(port, self.settings, self.get_mouse_pos)
+        self.game: Game = Game(port, self.get_mouse_pos)
 
         # region SCREEN-SETUP
 
@@ -24,11 +23,11 @@ class Client:
         # Screen is scaled to virtual screen and virtual screen is drawn
         # onto the physical one
 
-        self.physical_screen: pygame.Surface = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
+        self.physical_screen: pygame.Surface = pygame.display.set_mode((Settings.screen_width, Settings.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Squares")
 
-        self.virtual_screen_width: int = self.settings.screen_width
-        self.virtual_screen_height: int = self.settings.screen_height
+        self.virtual_screen_width: int = Settings.screen_width
+        self.virtual_screen_height: int = Settings.screen_height
 
         # this is the virtual screen
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
@@ -52,7 +51,7 @@ class Client:
         def scaler(r: pygame.Rect) -> pygame.Rect:
             '''Scales any rects from 1600 x 900 space to virtualScreen space'''
 
-            scale_amount: float = self.virtual_screen_width / self.settings.screen_width
+            scale_amount: float = self.virtual_screen_width / Settings.screen_width
             return pygame.Rect(
                 r.x * scale_amount,
                 r.y * scale_amount,
@@ -61,7 +60,7 @@ class Client:
             )
 
 
-        self.screen.fill(self.settings.color_bg.to_tuple())
+        self.screen.fill(Settings.color_bg.to_tuple())
 
         for bullet in self.game.bullets:
             bullet.draw(scaler=scaler, screen=self.screen)
@@ -70,7 +69,7 @@ class Client:
             player.draw(scaler=scaler, screen=self.screen)
 
 
-        self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
+        self.physical_screen.fill(Settings.color_screen_overflow.to_tuple())
         self.physical_screen.blit(self.screen, self.screen_offset.to_tuple())
         pygame.display.flip()
 
@@ -96,16 +95,16 @@ class Client:
 
         # more -> vertical bars
         # less -> horizontal bars
-        if aspect_ratio > self.settings.screen_aspect_ratio:
+        if aspect_ratio > Settings.screen_aspect_ratio:
             self.virtual_screen_height = newy
-            self.virtual_screen_width = self.settings.screen_aspect_ratio * newy
+            self.virtual_screen_width = Settings.screen_aspect_ratio * newy
 
             bar_width = newx-self.virtual_screen_width
             self.screen_offset = Vec2D(bar_width/2, 0)
             
         else:
             self.virtual_screen_width = newx
-            self.virtual_screen_height = newx / self.settings.screen_aspect_ratio
+            self.virtual_screen_height = newx / Settings.screen_aspect_ratio
         
             bar_height = newy-self.virtual_screen_height
             self.screen_offset = Vec2D(0, bar_height/2)
@@ -114,7 +113,7 @@ class Client:
 
 
     def screen_to_world(self, screen: Vec2D) -> Vec2D:
-        scalar: float = self.virtual_screen_width / self.settings.screen_width
+        scalar: float = self.virtual_screen_width / Settings.screen_width
 
         screen = screen - self.screen_offset
         world_vec: Vec2D = screen/scalar

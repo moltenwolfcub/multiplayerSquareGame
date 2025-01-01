@@ -13,6 +13,7 @@ from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
 from server.game_data import GameData
 from server.raw_packet import RawPacket
+from server.settings import Settings
 
 
 class Server:
@@ -191,7 +192,7 @@ class Server:
             self.game.update()
 
             tick_stop = time.perf_counter_ns()
-            time_remaining_ns = self.game.settings.tick_time_ns - (tick_stop-tick_start)
+            time_remaining_ns = Settings.tick_time_ns - (tick_stop-tick_start)
 
             if time_remaining_ns > 0:
                 time.sleep(time_remaining_ns/1_000_000_000)
