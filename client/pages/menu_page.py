@@ -36,7 +36,7 @@ try:
 
 except ModuleNotFoundError:
     def create_blob(radius: int, color: Color, blur_radius: int = 50) -> pygame.Surface:
-        circle = pygame.Surface((radius*2, radius*2))
+        circle = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
         pygame.draw.circle(circle, color.to_tuple(), (radius, radius), radius)
 
         return circle
