@@ -3,7 +3,7 @@ import sys
 import pygame
 
 # from client.pages.game_page import GamePage
-from client.pages.menu_page import MenuPage
+from client.pages.page_menu import MenuPage
 from client.pages.page import Page
 from client.settings import Settings
 from common.data_types import Vec2D
