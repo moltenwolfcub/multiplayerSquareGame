@@ -2,7 +2,8 @@ import sys
 
 import pygame
 
-from client.pages.game_page import GamePage
+# from client.pages.game_page import GamePage
+from client.pages.menu_page import MenuPage
 from client.pages.page import Page
 from client.settings import Settings
 from common.data_types import Vec2D
@@ -13,7 +14,8 @@ class Client:
     def __init__(self, port: int) -> None:
         pygame.init()
         
-        self.page: Page = GamePage(port, self.get_mouse_pos)
+        # self.page: Page = GamePage(port, self.get_mouse_pos)
+        self.page: Page = MenuPage()
 
         # region SCREEN-SETUP
 
