@@ -108,6 +108,8 @@ class Client:
 
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
 
+        self.page.on_resize(self.virtual_screen_width / Settings.screen_width)
+
 
     def screen_to_world(self, screen: Vec2D) -> Vec2D:
         scalar: float = self.virtual_screen_width / Settings.screen_width

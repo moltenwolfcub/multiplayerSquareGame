@@ -58,19 +58,23 @@ class MenuPage(Page):
         ]
         self.lights: list[tuple[pygame.Surface, pygame.Rect]] = []
 
-        for l in self.light_builder:
-            light = create_blob(l[0], l[1])
-            light.set_alpha(161)
-            size = light.get_size()
-
-            center = l[2].to_tuple()
-            rect = pygame.Rect(center[0]-size[0]/2, center[1]-size[1]/2, size[0], size[1])
-            
-            self.lights.append((light, rect))
+        self.current_sf: float = 1
+        self.generate_blobs()
         
         self.play_button = PlayButton()
 
+    def generate_blobs(self) -> None:
+        self.lights.clear()
 
+        for l in self.light_builder:
+            light: pygame.Surface = create_blob(int(l[0]*self.current_sf), l[1])
+            light.set_alpha(161)
+            size = light.get_size()
+
+            center = l[2]
+            rect = pygame.Rect(center.x*self.current_sf-size[0]/2, center.y*self.current_sf-size[1]/2, size[0], size[1])
+            
+            self.lights.append((light, rect))
 
 
     @override
@@ -97,9 +101,15 @@ class MenuPage(Page):
             p.draw(screen, scaler)
 
         for l in self.lights:
-            blit_pos = scaler(l[1]).topleft
+            # rect: pygame.Rect = scaler(l[1])
+            rect: pygame.Rect = l[1]
+            blit_pos = rect.topleft
 
-            screen.blit(l[0], blit_pos)
+            # sf: float = rect.w / l[1].w
+
+            image: pygame.Surface = l[0]
+
+            screen.blit(image, blit_pos)
         
         self.play_button.draw(screen, scaler)
 
@@ -107,3 +117,11 @@ class MenuPage(Page):
     @override
     def close(self) -> None:
         pass
+
+    @override
+    def on_resize(self, scale_factor: float) -> None:
+        if self.current_sf == scale_factor:
+            return
+        self.current_sf = scale_factor
+
+        self.generate_blobs()

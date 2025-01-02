@@ -21,3 +21,7 @@ class Page(ABC):
     @abstractmethod
     def close(self) -> None:
         pass
+
+    @abstractmethod
+    def on_resize(self, scale_factor: float) -> None:
+        pass
