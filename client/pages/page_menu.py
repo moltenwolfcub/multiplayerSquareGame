@@ -3,6 +3,7 @@ from typing import Callable, override
 import pygame
 
 from client import keybinds
+from client.pages.button_play import PlayButton
 from client.pages.page import Page
 from client.player import ClientPlayer
 from client.settings import Settings
@@ -66,6 +67,8 @@ class MenuPage(Page):
             rect = pygame.Rect(center[0]-size[0]/2, center[1]-size[1]/2, size[0], size[1])
             
             self.lights.append((light, rect))
+        
+        self.play_button = PlayButton()
 
 
 
@@ -88,7 +91,7 @@ class MenuPage(Page):
 
     @override
     def draw(self, screen: pygame.Surface, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
-        screen.fill(Settings.color_title_bg.to_tuple())
+        screen.fill(Settings.color_menu_bg.to_tuple())
 
         for p in self.players:
             p.draw(screen, scaler)
@@ -97,6 +100,8 @@ class MenuPage(Page):
             blit_pos = scaler(l[1]).topleft
 
             screen.blit(l[0], blit_pos)
+        
+        self.play_button.draw(screen, scaler)
 
     
     @override
