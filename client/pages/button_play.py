@@ -7,7 +7,7 @@ from common.data_types import Vec2D
 class PlayButton:
 
     def __init__(self) -> None:
-        self.pos: Vec2D = Vec2D(576, 459)
+        self.pos: Vec2D = Vec2D(556, 459)
         self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, 488, 154)
 
         self.alternate_color: bool = False
