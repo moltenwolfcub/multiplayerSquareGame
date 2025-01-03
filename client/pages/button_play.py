@@ -16,7 +16,7 @@ class PlayButton:
 
         # drop shadow
 
-        # outline
+        # border
         outline_color = Settings.color_menu_button_outline_alt if self.alternate_color else Settings.color_menu_button_outline
 
         translucent_outline: pygame.Surface = self._draw_bevelled_rect(scaler, self.rect, 28, outline_color)
@@ -32,7 +32,7 @@ class PlayButton:
         block_rect: pygame.Rect = pygame.Rect(self.rect.x+10, self.rect.y+10, self.rect.w-20, self.rect.h-20)
         screen.blit(self._draw_bevelled_rect(scaler, block_rect, 20, Settings.color_menu_button), block_rect)
 
-        # border
+        # outline
 
         # text
 
