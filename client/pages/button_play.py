@@ -1,5 +1,8 @@
 from typing import Callable
+
 import pygame
+
+from client.assets import fonts
 from client.settings import Settings
 from common.data_types import Color, Vec2D
 
@@ -26,7 +29,6 @@ class PlayButton:
         outline_rect: pygame.Rect = pygame.Rect(self.rect.x+1, self.rect.y+1, self.rect.w-2, self.rect.h-2)
         screen.blit(self._draw_bevelled_rect(scaler, outline_rect, 28, outline_color), outline_rect.topleft)
         
-
         # block
 
         block_rect: pygame.Rect = pygame.Rect(self.rect.x+10, self.rect.y+10, self.rect.w-20, self.rect.h-20)
@@ -35,6 +37,11 @@ class PlayButton:
         # outline
 
         # text
+        text_image: pygame.Surface; text_rect: pygame.Rect
+        text_image, text_rect = fonts.dyuthi_b.render(text="Play", size=110, fgcolor=Settings.color_menu_button_outline.to_tuple())
+        text_rect.center = (809, 543)
+
+        screen.blit(text_image, text_rect)
 
     @staticmethod
     def _draw_bevelled_rect(scaler: Callable[[pygame.Rect], pygame.Rect], rect: pygame.Rect, radius: int, color: Color) -> pygame.Surface:
