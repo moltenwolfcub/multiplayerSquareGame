@@ -24,15 +24,15 @@ class PlayButton:
 
         translucent_outline: pygame.Surface = self._draw_bevelled_rect(scaler, self.rect, 28, outline_color)
         translucent_outline.set_alpha(65)
-        screen.blit(translucent_outline, self.rect)
+        screen.blit(translucent_outline, scaler(self.rect))
 
         outline_rect: pygame.Rect = pygame.Rect(self.rect.x+1, self.rect.y+1, self.rect.w-2, self.rect.h-2)
-        screen.blit(self._draw_bevelled_rect(scaler, outline_rect, 28, outline_color), outline_rect.topleft)
+        screen.blit(self._draw_bevelled_rect(scaler, outline_rect, 28, outline_color), scaler(outline_rect).topleft)
         
         # block
 
         block_rect: pygame.Rect = pygame.Rect(self.rect.x+10, self.rect.y+10, self.rect.w-20, self.rect.h-20)
-        screen.blit(self._draw_bevelled_rect(scaler, block_rect, 20, Settings.color_menu_button), block_rect)
+        screen.blit(self._draw_bevelled_rect(scaler, block_rect, 20, Settings.color_menu_button), scaler(block_rect))
 
         # outline
 
@@ -40,8 +40,11 @@ class PlayButton:
         text_image: pygame.Surface; text_rect: pygame.Rect
         text_image, text_rect = fonts.dyuthi_b.render(text="Play", size=110, fgcolor=Settings.color_menu_button_outline.to_tuple())
         text_rect.center = (809, 543)
+        scaled_rect = scaler(text_rect)
 
-        screen.blit(text_image, text_rect)
+        text_image = pygame.transform.smoothscale(text_image, scaled_rect.size)
+
+        screen.blit(text_image, scaled_rect)
 
     @staticmethod
     def _draw_bevelled_rect(scaler: Callable[[pygame.Rect], pygame.Rect], rect: pygame.Rect, radius: int, color: Color) -> pygame.Surface:
