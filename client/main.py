@@ -2,7 +2,8 @@ import sys
 
 import pygame
 
-from client.pages.game_page import GamePage
+# from client.pages.game_page import GamePage
+from client.pages.page_menu import MenuPage
 from client.pages.page import Page
 from client.settings import Settings
 from common.data_types import Vec2D
@@ -13,7 +14,8 @@ class Client:
     def __init__(self, port: int) -> None:
         pygame.init()
         
-        self.page: Page = GamePage(port, self.get_mouse_pos)
+        # self.page: Page = GamePage(port, self.get_mouse_pos)
+        self.page: Page = MenuPage()
 
         # region SCREEN-SETUP
 
@@ -105,6 +107,8 @@ class Client:
             self.screen_offset = Vec2D(0, bar_height/2)
 
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
+
+        self.page.on_resize(self.virtual_screen_width / Settings.screen_width)
 
 
     def screen_to_world(self, screen: Vec2D) -> Vec2D:
