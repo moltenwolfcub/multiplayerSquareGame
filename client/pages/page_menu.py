@@ -3,6 +3,7 @@ from typing import Callable, override
 import pygame
 
 from client import keybinds
+from client.pages import page_ids
 from client.pages.button_play import PlayButton
 from client.pages.page import Page
 from client.player import ClientPlayer
@@ -45,7 +46,8 @@ except ModuleNotFoundError:
 
 class MenuPage(Page):
     
-    def __init__(self, mouse_getter: Callable[[], Vec2D]) -> None:
+    def __init__(self, page_changer: Callable[[int], None], mouse_getter: Callable[[], Vec2D]) -> None:
+        self.page_changer: Callable[[int], None] = page_changer
         self.mouse_getter: Callable[[], Vec2D] = mouse_getter
 
         self.players: list[ClientPlayer] = [
@@ -85,6 +87,17 @@ class MenuPage(Page):
             match event.key:
                 case keybinds.EXIT:
                     return 1
+                case _:
+                    return 0
+                
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            match event.button:
+                case pygame.BUTTON_LEFT:
+                    
+                    if self.play_button.rect.collidepoint(self.mouse_getter().to_tuple()):
+                        self.page_changer(page_ids.PAGE_GAME)
+
+                    return 0
                 case _:
                     return 0
         

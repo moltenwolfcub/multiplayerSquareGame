@@ -2,7 +2,8 @@ import sys
 
 import pygame
 
-# from client.pages.game_page import GamePage
+from client.pages import page_ids
+from client.pages.page_game import GamePage
 from client.pages.page_menu import MenuPage
 from client.pages.page import Page
 from client.settings import Settings
@@ -13,9 +14,10 @@ class Client:
 
     def __init__(self, port: int) -> None:
         pygame.init()
+
+        self.port: int = port # temporary until implement a page to join server
         
-        # self.page: Page = GamePage(port, self.get_mouse_pos)
-        self.page: Page = MenuPage(self.get_mouse_pos)
+        self.page: Page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
 
         # region SCREEN-SETUP
 
@@ -127,4 +129,16 @@ class Client:
     def exit_game(self) -> None:
         self.page.close()
         self.quit = True
+    
+    def change_page(self, page_id: int) -> None:
+        match page_id:
+            case page_ids.PAGE_MENU:
+                self.page.close()
 
+                self.page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
+            case page_ids.PAGE_GAME:
+                self.page.close()
+                
+                self.page = GamePage(port=self.port, mouse_getter=self.get_mouse_pos)
+            case _:
+                print(f"Error: Unknown page ID({page_id}). Staying on old page")
