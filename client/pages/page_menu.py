@@ -125,3 +125,5 @@ class MenuPage(Page):
         self.current_sf = scale_factor
 
         self.generate_blobs()
+
+        self.play_button.on_resize()

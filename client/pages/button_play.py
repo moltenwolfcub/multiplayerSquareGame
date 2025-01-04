@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 import pygame
 
@@ -50,10 +50,20 @@ class PlayButton:
 
         self.alternate_color: bool = False
 
+        self.drop_shadow: Optional[pygame.Surface] = None
+    
+    def on_resize(self) -> None:
+        self.drop_shadow = None
+
     def draw(self, screen: pygame.Surface, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
 
         # drop shadow
-        shadow: pygame.Surface = drop_shadow(Vec2D(*scaler(self.rect).size))
+        shadow: pygame.Surface
+        if self.drop_shadow is None:
+            shadow: pygame.Surface = drop_shadow(Vec2D(*scaler(self.rect).size))
+            self.drop_shadow = shadow
+        else:
+            shadow = self.drop_shadow
         shadow_rect = shadow.get_rect()
         shadow_rect.center = scaler(self.rect).center
 
