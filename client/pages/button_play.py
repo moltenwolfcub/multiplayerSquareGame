@@ -37,7 +37,7 @@ except ModuleNotFoundError:
 
         shadow = pygame.Surface(new_rect.size, pygame.SRCALPHA)
         shadow.fill((0,0,0))
-        shadow.set_alpha(80)
+        shadow.set_alpha(25)
 
         return shadow
 
