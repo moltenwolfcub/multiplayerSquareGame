@@ -70,8 +70,8 @@ class PlayButton:
         screen.blit(self._draw_bevelled_rect(scaler, outline_rect, 28, outline_color), scaler(outline_rect).topleft)
         
         # outline
-        outline_rect: pygame.Rect = scaler(pygame.Rect(self.rect.x+10, self.rect.y+10, self.rect.w-20, self.rect.h-20))
-        outline: pygame.Surface = pygame.Surface(outline_rect.size, pygame.SRCALPHA)
+        outline_rect: pygame.Rect = pygame.Rect(self.rect.x+10, self.rect.y+10, self.rect.w-20, self.rect.h-20)
+        outline: pygame.Surface = pygame.Surface(scaler(outline_rect).size, pygame.SRCALPHA)
 
         outline_curve_tl: pygame.Rect = scaler(pygame.Rect(20, 20, 20, 20))
         outline_curve_tr: pygame.Rect = scaler(pygame.Rect(outline_rect.w-20, 20, 20, 20))
@@ -83,17 +83,17 @@ class PlayButton:
         pygame.draw.circle(outline, Settings.color_menu_button_outline_medium.to_tuple(), outline_curve_bl.topleft, outline_curve_bl.w)
         pygame.draw.circle(outline, Settings.color_menu_button_outline_dark.to_tuple(), outline_curve_br.topleft, outline_curve_br.w)
 
-        outline_rect_top: pygame.Rect = scaler(pygame.Rect(20, 0, outline_rect.w-40, 10))
-        outline_rect_bottom: pygame.Rect = scaler(pygame.Rect(20, outline_rect.h-10, outline_rect.w-40, 10))
-        outline_rect_left: pygame.Rect = scaler(pygame.Rect(0, 20, 10, outline_rect.h-40))
-        outline_rect_right: pygame.Rect = scaler(pygame.Rect(outline_rect.w-10, 20, 10, outline_rect.h-40))
+        outline_rect_top: pygame.Rect = scaler(pygame.Rect(20, 0, outline_rect.w-40, 15))
+        outline_rect_bottom: pygame.Rect = scaler(pygame.Rect(20, outline_rect.h-15, outline_rect.w-40, 15))
+        outline_rect_left: pygame.Rect = scaler(pygame.Rect(0, 20, 15, outline_rect.h-40))
+        outline_rect_right: pygame.Rect = scaler(pygame.Rect(outline_rect.w-15, 20, 15, outline_rect.h-40))
 
         pygame.draw.rect(outline, Settings.color_menu_button_outline_light.to_tuple(), outline_rect_top)
         pygame.draw.rect(outline, Settings.color_menu_button_outline_dark.to_tuple(), outline_rect_bottom)
         pygame.draw.rect(outline, Settings.color_menu_button_outline_light.to_tuple(), outline_rect_left)
         pygame.draw.rect(outline, Settings.color_menu_button_outline_dark.to_tuple(), outline_rect_right)
 
-        screen.blit(outline, outline_rect)
+        screen.blit(outline, scaler(outline_rect))
 
         # block
         block_rect: pygame.Rect = pygame.Rect(self.rect.x+20, self.rect.y+20, self.rect.w-40, self.rect.h-40)
