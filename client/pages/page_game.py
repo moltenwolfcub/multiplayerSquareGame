@@ -9,8 +9,8 @@ from common.data_types import Vec2D
 
 class GamePage(Page):
     
-    def __init__(self, port: int, mouse_getter: Callable[[], Vec2D]) -> None:
-        self.game: Game = Game(port, mouse_getter)
+    def __init__(self, page_changer: Callable[[int], None], port: int, mouse_getter: Callable[[], Vec2D]) -> None:
+        self.game: Game = Game(page_changer, port, mouse_getter)
 
 
     @override

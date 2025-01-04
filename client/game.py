@@ -7,6 +7,7 @@ import pygame
 from client import keybinds
 from client.bullet import ClientBullet
 from client.network import Network
+from client.pages import page_ids
 from client.player import ClientPlayer
 from common.c2s_packets import C2SCreateBullet, C2SMovementUpdate, C2SRequestPlayerList
 from common.data_types import Vec2D
@@ -14,16 +15,21 @@ from common.data_types import Vec2D
 
 class Game:
     
-    def __init__(self, port: int, mouse_getter: Callable[[], Vec2D]) -> None:
+    def __init__(self, page_changer: Callable[[int], None], port: int, mouse_getter: Callable[[], Vec2D]) -> None:
+        self.page_changer: Callable[[int], None] = page_changer
         self.mouse_getter: Callable[[], Vec2D] = mouse_getter
         
         self.this_player_id: int = -1
 
-        self.initialise_network(port)
-
+        try:
+            self.initialise_network(port)
+            self.network_live: bool = True
+        except ConnectionRefusedError:
+            self.network_live: bool = False
 
         self.players: list[ClientPlayer] = []
-        self.network.send(C2SRequestPlayerList())
+        if self.network_live:
+            self.network.send(C2SRequestPlayerList())
 
         self.bullets: list[ClientBullet] = []
 
@@ -53,9 +59,16 @@ class Game:
         
     
     def tick(self) -> None:
+        if not self.network_live:
+            self.page_changer(page_ids.PAGE_MENU)
+            return
+        
         self.send_network_updates()
     
     def send_network_updates(self) -> None:
+        if not self.network_live:
+            return
+
         if self.movement_codes_dirty:
             dx = self.movement_codes[3] - self.movement_codes[2]
             dy = self.movement_codes[1] - self.movement_codes[0]

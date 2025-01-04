@@ -139,6 +139,6 @@ class Client:
             case page_ids.PAGE_GAME:
                 self.page.close()
                 
-                self.page = GamePage(port=self.port, mouse_getter=self.get_mouse_pos)
+                self.page = GamePage(page_changer=self.change_page, port=self.port, mouse_getter=self.get_mouse_pos)
             case _:
                 print(f"Error: Unknown page ID({page_id}). Staying on old page")
