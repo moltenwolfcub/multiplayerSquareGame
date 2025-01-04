@@ -15,7 +15,7 @@ class Client:
         pygame.init()
         
         # self.page: Page = GamePage(port, self.get_mouse_pos)
-        self.page: Page = MenuPage()
+        self.page: Page = MenuPage(self.get_mouse_pos)
 
         # region SCREEN-SETUP
 

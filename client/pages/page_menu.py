@@ -45,7 +45,9 @@ except ModuleNotFoundError:
 
 class MenuPage(Page):
     
-    def __init__(self) -> None:
+    def __init__(self, mouse_getter: Callable[[], Vec2D]) -> None:
+        self.mouse_getter: Callable[[], Vec2D] = mouse_getter
+
         self.players: list[ClientPlayer] = [
             ClientPlayer(0, Vec2D(210, 235), Color(72, 155, 126)),
             ClientPlayer(1, Vec2D(830, 330), Color(121, 137, 210)),
@@ -91,7 +93,10 @@ class MenuPage(Page):
 
     @override
     def update(self) -> None:
-        pass
+        if self.play_button.rect.collidepoint(self.mouse_getter().to_tuple()):
+            self.play_button.alternate_color = True
+        else:
+            self.play_button.alternate_color = False
 
     @override
     def draw(self, screen: pygame.Surface, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
