@@ -11,6 +11,7 @@ from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
+from server.connection import Connection
 from server.game_data import GameData
 from server.raw_packet import RawPacket
 
@@ -26,7 +27,7 @@ class Server:
         self.recieved_packets: queue.Queue[RawPacket] = queue.Queue()
         self.quit: bool = False
 
-        self.open_connections: dict[socket.socket, int] = {}
+        self.open_connections: list[Connection] = []
 
         self.game: GameData = GameData(self)
 
@@ -53,13 +54,14 @@ class Server:
     def accept_loop(self) -> None:
         '''Handles accepting new clients'''
         while not self.quit:
-            conn, addr = self.socket.accept()
+            sock, addr = self.socket.accept()
+            conn: Connection = Connection(sock)
 
             print(f"Connecting to: {addr}")
 
             _thread.start_new_thread(self.read_loop, (conn,))
     
-    def read_loop(self, conn: socket.socket) -> None:
+    def read_loop(self, conn: Connection) -> None:
         '''One per client to store received packets for later processing'''
         if self.initial_handshake(conn) is not None:
             return
@@ -95,8 +97,8 @@ class Server:
             self.handle_packet(raw_packet)
             self.recieved_packets.task_done()
 
-    def initial_handshake(self, conn: socket.socket) -> Optional[Exception]:
-        PacketHeader.send_packet(conn, S2CHandshake())
+    def initial_handshake(self, conn: Connection) -> Optional[Exception]:
+        self.send(conn, S2CHandshake())
         try:
             check_packet = self.recv(conn)
         except ConnectionResetError:
@@ -105,25 +107,25 @@ class Server:
             return ConnectionError()
 
         if check_packet is None:
-            print(f"No response to handshake from peer: {conn.getpeername()}")
-            PacketHeader.send_packet(conn, S2CFailedHandshake())
+            print(f"No response to handshake from peer: {conn.get_peer_name()}")
+            self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
             self.close_connection(conn)
             return ConnectionError()
         
         if self.handle_packet(RawPacket(check_packet, conn)) is not None:
-            print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.getpeername()}")
-            PacketHeader.send_packet(conn, S2CFailedHandshake())
+            print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.get_peer_name()}")
+            self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
             self.close_connection(conn)
             return ConnectionError()
         
-        print(f"Connection established to peer: {conn.getpeername()}")
+        print(f"Connection established to peer: {conn.get_peer_name()}")
 
     def close_server(self) -> None:
         self.quit = True
 
-    def close_connection(self, conn: socket.socket) -> None:
+    def close_connection(self, conn: Connection) -> None:
         try:
             conn.close()
         except:
@@ -132,14 +134,14 @@ class Server:
     def get_free_id(self) -> int:
         id = 0
         while True:
-            if list(self.open_connections.values()).count(id) == 0:
+            if len([c for c in self.open_connections if c.player_id == id]) == 0:
                 return id
             id += 1
 
     def broadcast(self, packet: Packet) -> None:
         for c in self.open_connections:
             try:
-                PacketHeader.send_packet(c, packet)
+                self.send(c, packet)
             except BrokenPipeError:
                 pass
             except OSError as e:
@@ -148,36 +150,44 @@ class Server:
                 else:
                     raise e
     
-    def recv(self, conn: socket.socket) -> Optional[bytes]:
-        header = conn.recv(PacketHeader.HEADER_SIZE)
+    def recv(self, conn: Connection) -> Optional[bytes]:
+        header = conn.socket.recv(PacketHeader.HEADER_SIZE)
         if not header:
             return None
 
         packet_size = PacketHeader.get_packet_size(header)
 
-        raw_packet = conn.recv(packet_size)
+        raw_packet = conn.socket.recv(packet_size)
         if not raw_packet:
             return None
         
         # printBytes(rawPacket)
         return raw_packet
+    
+    def send(self, conn: Connection, packet: Packet) -> None:
+        PacketHeader.send_packet(conn.socket, packet)
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
-    def on_client_join(self, conn: socket.socket) -> None:
+    def on_client_join(self, conn: Connection) -> None:
         id = self.get_free_id()
-        self.open_connections[conn] = id
-        PacketHeader.send_packet(conn, S2CSendID(id))
+        conn.open_connection(id)
+        self.open_connections.append(conn)
+        self.send(conn, S2CSendID(id))
 
         self.game.add_random_player(id)
 
         self.broadcast(S2CPlayers(self.game.players))
     
-    def on_client_disconnect(self, conn: socket.socket) -> None:
-        id = self.open_connections.pop(conn, None)
-
-        if id is None:
+    def on_client_disconnect(self, conn: Connection) -> None:
+        id = conn.player_id
+        try:
+            self.open_connections.remove(conn)
+        except:
             return # connection was never in list
+
+        if id == -1:
+            print("Error removing client. connection was opened but ID wasn't set")
 
         self.game.remove_player(id)
 
@@ -223,10 +233,10 @@ class Server:
 
                 case "c" | "connections":
                     print("CONNECTIONS:")
-                    for c, id in self.open_connections.items():
-                        print(f"- {id}: {c}") 
+                    for c in self.open_connections:
+                        print(f"- {c}") 
 
-                    if len(self.game.players) == 0:
+                    if len(self.open_connections) == 0:
                         print("empty")
 
                 case _:
@@ -244,12 +254,12 @@ class Server:
                     return ConnectionError()
             
             case packet_ids.C2S_PLAYER_REQUEST:
-                PacketHeader.send_packet(raw_packet.sender, S2CPlayers(self.game.players))
+                self.send(raw_packet.sender, S2CPlayers(self.game.players))
             
             case packet_ids.C2S_MOVEMENT_UPDATE:
                 movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(raw_packet.data)
 
-                player = self.game.get_player(self.open_connections[raw_packet.sender])
+                player = self.game.get_player(raw_packet.sender.player_id)
                 if player is None:
                     print(f"Error! No player assosiated with connection: {raw_packet.sender}")
                     return LookupError()
@@ -259,7 +269,7 @@ class Server:
             case packet_ids.C2S_CREATE_BULLET:
                 bullet_packet: C2SCreateBullet = C2SCreateBullet.decode_data(raw_packet.data)
 
-                shooting_player = self.game.get_player(self.open_connections[raw_packet.sender])
+                shooting_player = self.game.get_player(raw_packet.sender.player_id)
 
                 if shooting_player is None:
                     print(f"Error! No player assosiated with connection: {raw_packet.sender}")
