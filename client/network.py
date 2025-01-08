@@ -94,6 +94,7 @@ class Network:
 
     def close_connection(self) -> None:
         try:
+            self.conn.shutdown(socket.SHUT_RDWR)
             self.conn.close()
         except:
             pass
