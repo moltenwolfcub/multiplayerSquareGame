@@ -21,5 +21,10 @@ class Connection:
         return self.socket.getpeername()
 
     def close(self) -> None:
+        if not self.is_open:
+            return
+
+        self.is_open = False
+        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         

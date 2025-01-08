@@ -72,12 +72,14 @@ class Server:
             try:
                 raw_packet = self.recv(conn)
                 if raw_packet is None:
+                    print(f"Lost connection to peer")
                     self.close_connection(conn)
                     break
 
                 self.recieved_packets.put(RawPacket(raw_packet, conn))
 
             except ConnectionResetError:
+                print(f"Lost connection to peer")
                 self.close_connection(conn)
                 break
 
@@ -85,10 +87,6 @@ class Server:
                 self.close_connection(conn)
                 print("Network Error: ", e)
                 break
-        
-        # once players are properly linked to clients change to a client disconnect message
-        print(f"Lost connection to peer")
-        self.on_client_disconnect(conn)
     
     def packet_loop(self) -> None:
         '''Processes all recieved packets'''
@@ -103,21 +101,21 @@ class Server:
             check_packet = self.recv(conn)
         except ConnectionResetError:
             print(f"Error during response from closed peer.")
-            self.close_connection(conn)
+            self.close_connection(conn, False)
             return ConnectionError()
 
         if check_packet is None:
             print(f"No response to handshake from peer: {conn.get_peer_name()}")
             self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
-            self.close_connection(conn)
+            self.close_connection(conn, False)
             return ConnectionError()
         
         if self.handle_packet(RawPacket(check_packet, conn)) is not None:
             print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.get_peer_name()}")
             self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
-            self.close_connection(conn)
+            self.close_connection(conn, False)
             return ConnectionError()
         
         print(f"Connection established to peer: {conn.get_peer_name()}")
@@ -125,11 +123,10 @@ class Server:
     def close_server(self) -> None:
         self.quit = True
 
-    def close_connection(self, conn: Connection) -> None:
-        try:
-            conn.close()
-        except:
-            print("Error while closing connection")
+    def close_connection(self, conn: Connection, was_open: bool = True) -> None:
+        conn.close()
+        if was_open:
+            self.on_client_disconnect(conn)
         
     def get_free_id(self) -> int:
         id = 0
@@ -238,6 +235,11 @@ class Server:
 
                     if len(self.open_connections) == 0:
                         print("empty")
+
+                case "k" | "kick":
+                    print("CLEARING")
+                    for c in self.open_connections:
+                        self.close_connection(c)
 
                 case _:
                     pass
