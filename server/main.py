@@ -209,83 +209,78 @@ class Server:
         while not self.quit:
             console_input: str = input().lower().strip()
 
-            match console_input:
-                case "q" | "quit":
-                    self.close_server()
+            if console_input in ["q", "quit"]:
+                self.close_server()
 
-                case "p" | "players":
-                    print("PLAYERS:")
-                    for p in self.game.players:
-                        print(f"- {p}")
+            elif console_input in ["p", "players"]:
+                print("PLAYERS:")
+                for p in self.game.players:
+                    print(f"- {p}")
 
-                    if len(self.game.players) == 0:
-                        print("empty")
+                if len(self.game.players) == 0:
+                    print("empty")
 
-                case "b" | "bullets":
-                    print("BULLETS:")
-                    for b in self.game.bullets:
-                        print(f"- {b}")
+            elif console_input in ["b", "bullets"]:
+                print("BULLETS:")
+                for b in self.game.bullets:
+                    print(f"- {b}")
 
-                    if len(self.game.bullets) == 0:
-                        print("empty")
+                if len(self.game.bullets) == 0:
+                    print("empty")
 
-                case "c" | "connections":
-                    print("CONNECTIONS:")
-                    for c in self.open_connections:
-                        print(f"- {c}") 
+            elif console_input in ["c", "connections"]:
+                print("CONNECTIONS:")
+                for c in self.open_connections:
+                    print(f"- {c}") 
 
-                    if len(self.open_connections) == 0:
-                        print("empty")
+                if len(self.open_connections) == 0:
+                    print("empty")
 
-                case "k" | "kick":
-                    print("CLEARING")
-                    for c in self.open_connections:
-                        self.broadcast(S2CDisconnectPlayer(S2CDisconnectPlayer.KICKED))
-                        self.close_connection(c)
-
-                case _:
-                    pass
+            elif console_input in ["k", "kick"]:
+                print("CLEARING")
+                for c in self.open_connections:
+                    self.broadcast(S2CDisconnectPlayer(S2CDisconnectPlayer.KICKED))
+                    self.close_connection(c)
 
     def handle_packet(self, raw_packet: RawPacket) -> Optional[Exception]:
         packet_type: int = Packet.decode_id(raw_packet.data)
 
-        match packet_type:
-            case packet_ids.C2S_HANDSHAKE:
-                handshake_packet: C2SHandshake = C2SHandshake.decode_data(raw_packet.data)
+        if packet_type == packet_ids.C2S_HANDSHAKE:
+            handshake_packet: C2SHandshake = C2SHandshake.decode_data(raw_packet.data)
 
-                if not handshake_packet.isCorrect():
-                    print("Error during handshake")
-                    return ConnectionError()
-            
-            case packet_ids.C2S_PLAYER_REQUEST:
-                self.send(raw_packet.sender, S2CPlayers(self.game.players))
-            
-            case packet_ids.C2S_MOVEMENT_UPDATE:
-                movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(raw_packet.data)
-
-                player = self.game.get_player(raw_packet.sender.player_id)
-                if player is None:
-                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
-                    return LookupError()
-                
-                player.mov_dir = movement_packet.mov_dir
-            
-            case packet_ids.C2S_CREATE_BULLET:
-                bullet_packet: C2SCreateBullet = C2SCreateBullet.decode_data(raw_packet.data)
-
-                shooting_player = self.game.get_player(raw_packet.sender.player_id)
-
-                if shooting_player is None:
-                    print(f"Error! No player assosiated with connection: {raw_packet.sender}")
-                    return LookupError()
-
-                self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
-
-                self.broadcast(S2CBullets(self.game.bullets))
-            
-            case packet_ids.C2S_CLIENT_DISCONNECT:
-                self.close_connection(raw_packet.sender, shutdown=False)
-
-            case _:
-                print(f"Unknown packet (ID: {packet_type})")
+            if not handshake_packet.isCorrect():
+                print("Error during handshake")
                 return ConnectionError()
+        
+        elif packet_type == packet_ids.C2S_PLAYER_REQUEST:
+            self.send(raw_packet.sender, S2CPlayers(self.game.players))
+        
+        elif packet_type == packet_ids.C2S_MOVEMENT_UPDATE:
+            movement_packet: C2SMovementUpdate = C2SMovementUpdate.decode_data(raw_packet.data)
+
+            player = self.game.get_player(raw_packet.sender.player_id)
+            if player is None:
+                print(f"Error! No player assosiated with connection: {raw_packet.sender}")
+                return LookupError()
+            
+            player.mov_dir = movement_packet.mov_dir
+        
+        elif packet_type == packet_ids.C2S_CREATE_BULLET:
+            bullet_packet: C2SCreateBullet = C2SCreateBullet.decode_data(raw_packet.data)
+
+            shooting_player = self.game.get_player(raw_packet.sender.player_id)
+
+            if shooting_player is None:
+                print(f"Error! No player assosiated with connection: {raw_packet.sender}")
+                return LookupError()
+
+            self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
+
+            self.broadcast(S2CBullets(self.game.bullets))
+        
+        elif packet_type == packet_ids.C2S_CLIENT_DISCONNECT:
+            self.close_connection(raw_packet.sender, shutdown=False)
+
+        else:
+            print(f"Unknown packet (ID: {packet_type})")
+            return ConnectionError()

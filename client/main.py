@@ -82,11 +82,8 @@ class Client:
                 continue
             
             feedback_code = self.page.check_event(event)
-            match feedback_code:
-                case 1:
-                    self.exit_game()
-                case 0 | _:
-                    pass
+            if feedback_code == 1:
+                self.exit_game()
     
     def _resize_screen(self, event: pygame.event.Event) -> None:
         newx, newy = event.x, event.y
@@ -131,14 +128,13 @@ class Client:
         self.quit = True
     
     def change_page(self, page_id: int) -> None:
-        match page_id:
-            case page_ids.PAGE_MENU:
-                self.page.close()
+        if page_id == page_ids.PAGE_MENU:
+            self.page.close()
 
-                self.page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
-            case page_ids.PAGE_GAME:
-                self.page.close()
-                
-                self.page = GamePage(page_changer=self.change_page, port=self.port, mouse_getter=self.get_mouse_pos)
-            case _:
-                print(f"Error: Unknown page ID({page_id}). Staying on old page")
+            self.page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
+        elif page_id == page_ids.PAGE_GAME:
+            self.page.close()
+            
+            self.page = GamePage(page_changer=self.change_page, port=self.port, mouse_getter=self.get_mouse_pos)
+        else:
+            print(f"Error: Unknown page ID({page_id}). Staying on old page")

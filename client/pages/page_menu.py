@@ -84,22 +84,16 @@ class MenuPage(Page):
     @override
     def check_event(self, event: pygame.event.Event) -> int:
         if event.type == pygame.KEYDOWN:
-            match event.key:
-                case keybinds.EXIT:
-                    return 1
-                case _:
-                    return 0
+            if event.key == keybinds.EXIT:
+                return 1
                 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            match event.button:
-                case pygame.BUTTON_LEFT:
-                    
-                    if self.play_button.rect.collidepoint(self.mouse_getter().to_tuple()):
-                        self.page_changer(page_ids.PAGE_GAME)
+            if event.button == pygame.BUTTON_LEFT:
+                
+                if self.play_button.rect.collidepoint(self.mouse_getter().to_tuple()):
+                    self.page_changer(page_ids.PAGE_GAME)
 
-                    return 0
-                case _:
-                    return 0
+                return 0
         
         return 0
 

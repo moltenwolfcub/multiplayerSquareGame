@@ -107,52 +107,52 @@ class Network:
     def handle_packet(self, raw_packet: bytes) -> Optional[Exception]:
         packet_type = Packet.decode_id(raw_packet)
 
-        match packet_type:
-            case packet_ids.S2C_HANDSHAKE:
-                handshake_packet: S2CHandshake = S2CHandshake.decode_data(raw_packet)
+        
+        if packet_type == packet_ids.S2C_HANDSHAKE:
+            handshake_packet: S2CHandshake = S2CHandshake.decode_data(raw_packet)
 
-                if not handshake_packet.isCorrect():
-                    print("Error during handshake")
-                    return ConnectionError()
-                
-            case packet_ids.S2C_HANDSHAKE_FAIL:
-                print("Server error during handshake. Aborting")
-                self.close_connection()
-            
-            case packet_ids.S2C_PLAYERS:
-                players_packet: S2CPlayers = S2CPlayers.decode_data(raw_packet)
-                
-                client_players: list[ClientPlayer] = []
-
-                for common_player in players_packet.players:
-                    client_players.append(ClientPlayer.from_common(common_player))
-                
-                self.game.players = client_players
-            
-            case packet_ids.S2C_BULLETS:
-                bullets_packet: S2CBullets = S2CBullets.decode_data(raw_packet)
-                
-                client_bullets: list[ClientBullet] = []
-
-                for common_bullet in bullets_packet.bullets:
-                    client_bullets.append(ClientBullet.from_common(common_bullet))
-                
-                self.game.bullets = client_bullets
-            
-            case packet_ids.S2C_SEND_ID:
-                id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
-
-                self.game.this_player_id =  id_packet.player_id
-            
-            case packet_ids.S2C_PLAYER_DISCONNECT:
-                player_disconnect_packet: S2CDisconnectPlayer = S2CDisconnectPlayer.decode_data(raw_packet)
-
-                if player_disconnect_packet.reason == S2CDisconnectPlayer.KICKED:
-                    print("Kicked by server")
-                
-                self.game.update_server_on_exit = False
-                self.game.page_changer(page_ids.PAGE_MENU)
-
-            case _:
-                print(f"Unknown packet (ID: {packet_type})")
+            if not handshake_packet.isCorrect():
+                print("Error during handshake")
                 return ConnectionError()
+            
+        elif packet_type == packet_ids.S2C_HANDSHAKE_FAIL:
+            print("Server error during handshake. Aborting")
+            self.close_connection()
+        
+        elif packet_type == packet_ids.S2C_PLAYERS:
+            players_packet: S2CPlayers = S2CPlayers.decode_data(raw_packet)
+            
+            client_players: list[ClientPlayer] = []
+
+            for common_player in players_packet.players:
+                client_players.append(ClientPlayer.from_common(common_player))
+            
+            self.game.players = client_players
+        
+        elif packet_type == packet_ids.S2C_BULLETS:
+            bullets_packet: S2CBullets = S2CBullets.decode_data(raw_packet)
+            
+            client_bullets: list[ClientBullet] = []
+
+            for common_bullet in bullets_packet.bullets:
+                client_bullets.append(ClientBullet.from_common(common_bullet))
+            
+            self.game.bullets = client_bullets
+        
+        elif packet_type == packet_ids.S2C_SEND_ID:
+            id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
+
+            self.game.this_player_id =  id_packet.player_id
+        
+        elif packet_type == packet_ids.S2C_PLAYER_DISCONNECT:
+            player_disconnect_packet: S2CDisconnectPlayer = S2CDisconnectPlayer.decode_data(raw_packet)
+
+            if player_disconnect_packet.reason == S2CDisconnectPlayer.KICKED:
+                print("Kicked by server")
+            
+            self.game.update_server_on_exit = False
+            self.game.page_changer(page_ids.PAGE_MENU)
+
+        else:
+            print(f"Unknown packet (ID: {packet_type})")
+            return ConnectionError()

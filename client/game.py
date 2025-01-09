@@ -97,57 +97,55 @@ class Game:
         return 0
                    
     def _check_keydown_events(self, event: pygame.event.Event) -> int:
-        match event.key:
-            case keybinds.EXIT:
-                if self.network_live:
-                    self.page_changer(page_ids.PAGE_MENU)
-                return 0
+        if event.key == keybinds.EXIT:
+            if self.network_live:
+                self.page_changer(page_ids.PAGE_MENU)
+            return 0
 
-            case keybinds.MOV_UP:
-                self.movement_codes[0] = 1
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_DOWN:
-                self.movement_codes[1] = 1
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_LEFT:
-                self.movement_codes[2] = 1
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_RIGHT:
-                self.movement_codes[3] = 1
-                self.movement_codes_dirty = True
-                return 0
-            
-            case keybinds.SHOOT:
-                self.shoot()
-                return 0
+        elif event.key == keybinds.MOV_UP:
+            self.movement_codes[0] = 1
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_DOWN:
+            self.movement_codes[1] = 1
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_LEFT:
+            self.movement_codes[2] = 1
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_RIGHT:
+            self.movement_codes[3] = 1
+            self.movement_codes_dirty = True
+            return 0
+        
+        elif event.key == keybinds.SHOOT:
+            self.shoot()
+            return 0
 
-            case _:
-                return 0
+        else:
+            return 0
 
     def _check_keyup_events(self, event: pygame.event.Event) -> int:
-        match event.key:
-            case keybinds.MOV_UP:
-                self.movement_codes[0] = 0
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_DOWN:
-                self.movement_codes[1] = 0
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_LEFT:
-                self.movement_codes[2] = 0
-                self.movement_codes_dirty = True
-                return 0
-            case keybinds.MOV_RIGHT:
-                self.movement_codes[3] = 0
-                self.movement_codes_dirty = True
-                return 0
+        if event.key == keybinds.MOV_UP:
+            self.movement_codes[0] = 0
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_DOWN:
+            self.movement_codes[1] = 0
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_LEFT:
+            self.movement_codes[2] = 0
+            self.movement_codes_dirty = True
+            return 0
+        elif event.key == keybinds.MOV_RIGHT:
+            self.movement_codes[3] = 0
+            self.movement_codes_dirty = True
+            return 0
 
-            case _:
-                return 0
+        else:
+            return 0
     
 
     def shoot(self) -> None:
