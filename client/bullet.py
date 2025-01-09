@@ -18,8 +18,9 @@ class ClientBullet:
 
     def draw(self, screen: pygame.Surface, scaler: Callable[[pygame.Rect], pygame.Rect]) -> None:
         draw_rect = scaler(self.rect)
+        draw_radius = scaler(pygame.Rect(0,0,self.radius,self.radius))
 
-        pygame.draw.circle(screen, (0, 0, 0), draw_rect.center, self.radius)
+        pygame.draw.circle(screen, (0, 0, 0), draw_rect.center, draw_radius.w)
     
     @staticmethod
     def from_common(common: CommonBullet) -> 'ClientBullet':
