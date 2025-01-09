@@ -1,29 +1,23 @@
-import _thread
-import math
 import sys
-from typing import Optional
 
 import pygame
 
-from client import keybinds
-from client.bullet import ClientBullet
-from client.network import Network
-from client.player import ClientPlayer
+from client.pages import page_ids
+from client.pages.page_game import GamePage
+from client.pages.page_menu import MenuPage
+from client.pages.page import Page
 from client.settings import Settings
-from common.c2s_packets import C2SRequestPlayerList
 from common.data_types import Vec2D
 
 
-class Game:
+class Client:
 
     def __init__(self, port: int) -> None:
         pygame.init()
 
-        self.settings: Settings = Settings()
+        self.port: int = port # temporary until implement a page to join server
         
-        self.this_player_id: int = -1
-
-        self.initialise_network(port)
+        self.page: Page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
 
         # region SCREEN-SETUP
 
@@ -34,11 +28,11 @@ class Game:
         # Screen is scaled to virtual screen and virtual screen is drawn
         # onto the physical one
 
-        self.physical_screen: pygame.Surface = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
+        self.physical_screen: pygame.Surface = pygame.display.set_mode((Settings.screen_width, Settings.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Squares")
 
-        self.virtual_screen_width: int = self.settings.screen_width
-        self.virtual_screen_height: int = self.settings.screen_height
+        self.virtual_screen_width: int = Settings.screen_width
+        self.virtual_screen_height: int = Settings.screen_height
 
         # this is the virtual screen
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
@@ -46,30 +40,13 @@ class Game:
 
         # endregion
 
-        self.players: list[ClientPlayer] = []
-        self.network.send(C2SRequestPlayerList())
-
-        self.bullets: list[ClientBullet] = []
-
-        self.movement_codes: list[int] = [0, 0, 0, 0]
-        self.movement_codes_dirty: bool = False
-
-        self.shoot_angle: float = -1
-
         self.quit = False
-
-    def initialise_network(self, port: int) -> None:
-        self.network = Network(self, port)
-        self.network.connect()
-
-        _thread.start_new_thread(self.network.packet_loop, ())
-        _thread.start_new_thread(self.network.read_loop, ())
 
 
     def run(self) -> None:
         while not self.quit:
             self._check_events()
-            self.network.send_updates()
+            self.page.update()
             self._update_screen()
 
         sys.exit()
@@ -79,25 +56,19 @@ class Game:
         def scaler(r: pygame.Rect) -> pygame.Rect:
             '''Scales any rects from 1600 x 900 space to virtualScreen space'''
 
-            scale_amount: float = self.virtual_screen_width / self.settings.screen_width
+            scale_amount: float = self.virtual_screen_width / Settings.screen_width
             return pygame.Rect(
                 r.x * scale_amount,
                 r.y * scale_amount,
                 r.w * scale_amount,
                 r.h * scale_amount,
             )
+        
+
+        self.page.draw(self.screen, scaler)
 
 
-        self.screen.fill(self.settings.color_bg.to_tuple())
-
-        for bullet in self.bullets:
-            bullet.draw(scaler)
-
-        for player in self.players:
-            player.draw(scaler)
-
-
-        self.physical_screen.fill(self.settings.color_screen_overflow.to_tuple())
+        self.physical_screen.fill(Settings.color_screen_overflow.to_tuple())
         self.physical_screen.blit(self.screen, self.screen_offset.to_tuple())
         pygame.display.flip()
 
@@ -105,55 +76,17 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.exit_game()
-
-            elif event.type == pygame.KEYDOWN:
-                self._check_keydown_events(event)
-            elif event.type == pygame.KEYUP:
-                self._check_keyup_events(event)
+                continue
             elif event.type == pygame.WINDOWRESIZED:
                 self._resize_screen(event)
-                   
-    def _check_keydown_events(self, event: pygame.event.Event) -> None:
-        match event.key:
-            case keybinds.EXIT:
-                self.exit_game()
-
-            case keybinds.MOV_UP:
-                self.movement_codes[0] = 1
-                self.movement_codes_dirty = True
-            case keybinds.MOV_DOWN:
-                self.movement_codes[1] = 1
-                self.movement_codes_dirty = True
-            case keybinds.MOV_LEFT:
-                self.movement_codes[2] = 1
-                self.movement_codes_dirty = True
-            case keybinds.MOV_RIGHT:
-                self.movement_codes[3] = 1
-                self.movement_codes_dirty = True
+                continue
             
-            case keybinds.SHOOT:
-                self.shoot()
-
-            case _:
-                pass
-
-    def _check_keyup_events(self, event: pygame.event.Event) -> None:
-        match event.key:
-            case keybinds.MOV_UP:
-                self.movement_codes[0] = 0
-                self.movement_codes_dirty = True
-            case keybinds.MOV_DOWN:
-                self.movement_codes[1] = 0
-                self.movement_codes_dirty = True
-            case keybinds.MOV_LEFT:
-                self.movement_codes[2] = 0
-                self.movement_codes_dirty = True
-            case keybinds.MOV_RIGHT:
-                self.movement_codes[3] = 0
-                self.movement_codes_dirty = True
-
-            case _:
-                pass
+            feedback_code = self.page.check_event(event)
+            match feedback_code:
+                case 1:
+                    self.exit_game()
+                case 0 | _:
+                    pass
     
     def _resize_screen(self, event: pygame.event.Event) -> None:
         newx, newy = event.x, event.y
@@ -161,85 +94,51 @@ class Game:
 
         # more -> vertical bars
         # less -> horizontal bars
-        if aspect_ratio > self.settings.screen_aspect_ratio:
+        if aspect_ratio > Settings.screen_aspect_ratio:
             self.virtual_screen_height = newy
-            self.virtual_screen_width = self.settings.screen_aspect_ratio * newy
+            self.virtual_screen_width = Settings.screen_aspect_ratio * newy
 
             bar_width = newx-self.virtual_screen_width
             self.screen_offset = Vec2D(bar_width/2, 0)
             
         else:
             self.virtual_screen_width = newx
-            self.virtual_screen_height = newx / self.settings.screen_aspect_ratio
+            self.virtual_screen_height = newx / Settings.screen_aspect_ratio
         
             bar_height = newy-self.virtual_screen_height
             self.screen_offset = Vec2D(0, bar_height/2)
 
         self.screen: pygame.Surface = pygame.Surface((self.virtual_screen_width, self.virtual_screen_height))
 
+        self.page.on_resize(self.virtual_screen_width / Settings.screen_width)
+
 
     def screen_to_world(self, screen: Vec2D) -> Vec2D:
-        scalar: float = self.virtual_screen_width / self.settings.screen_width
+        scalar: float = self.virtual_screen_width / Settings.screen_width
 
         screen = screen - self.screen_offset
         world_vec: Vec2D = screen/scalar
 
         return world_vec
-
-    def get_this_player(self) -> Optional[ClientPlayer]:
-        if self.this_player_id == -1:
-            print("ID hasn't been set yet")
-            return None
-
-        for p in self.players:
-            if p.id == self.this_player_id:
-                return p
-        else:
-            print("Couldn't find this_player")
-            return None
-        # return self.players[self.this_player_id]
-
-    def exit_game(self) -> None:
-        self.network.close_connection()
-        self.quit = True
     
-    def shoot(self) -> None:
-        if not pygame.mouse.get_focused():
-            return # mouse not on screen
-        
+    def get_mouse_pos(self) -> Vec2D:
         raw_mouse_pos: Vec2D = Vec2D.from_tuple(pygame.mouse.get_pos())
         mouse_pos: Vec2D = self.screen_to_world(raw_mouse_pos)
-        
-        this_player: Optional[ClientPlayer] = self.get_this_player()
-        if this_player is None:
-            return # can't find self to shoot from
-        player_pos = this_player.pos
+        return mouse_pos
 
-        shoot_vec: Vec2D = mouse_pos-player_pos
-        x, y = shoot_vec.x, shoot_vec.y
+    def exit_game(self) -> None:
+        self.page.close()
+        self.quit = True
+    
+    def change_page(self, page_id: int) -> None:
+        match page_id:
+            case page_ids.PAGE_MENU:
+                self.page.close()
 
-        if x == y == 0:
-            return # no direction because mouse exactly on player
-        
-        alpha: float
-        if x == 0 or y == 0:
-            alpha = 0
-        else:
-            abs_x, abs_y = abs(x), abs(y)
-
-            if x/abs_x == y/abs_y:
-                alpha = math.atan(abs_y / abs_x)
-            else:
-                alpha = math.atan(abs_x / abs_y)
-        
-        alpha = math.degrees(alpha)
-        
-        if x >= 0 and y < 0:
-            self.shoot_angle = 0 + alpha
-        elif x > 0 and y >= 0:
-            self.shoot_angle = 90 + alpha
-        elif x <= 0 and y > 0:
-            self.shoot_angle = 180 + alpha
-        elif x < 0 and y <= 0:
-            self.shoot_angle = 270 + alpha
-
+                self.page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
+            case page_ids.PAGE_GAME:
+                self.page.close()
+                
+                self.page = GamePage(page_changer=self.change_page, port=self.port, mouse_getter=self.get_mouse_pos)
+            case _:
+                print(f"Error: Unknown page ID({page_id}). Staying on old page")

@@ -20,11 +20,12 @@ class Connection:
     def get_peer_name(self) -> str:
         return self.socket.getpeername()
 
-    def close(self) -> None:
+    def close(self, shutdown: bool) -> None:
         if not self.is_open:
             return
 
         self.is_open = False
-        self.socket.shutdown(socket.SHUT_RDWR)
+        if shutdown:
+            self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         

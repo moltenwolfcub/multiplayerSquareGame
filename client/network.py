@@ -1,62 +1,58 @@
 import queue
 import socket
-import sys
 from typing import TYPE_CHECKING, Optional
 
 from client.bullet import ClientBullet
 from client.player import ClientPlayer
 from common import packet_ids
-from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
-from common.data_types import Vec2D
+from common.c2s_packets import C2SHandshake
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
 from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
 
 if TYPE_CHECKING:
-    from client.main import Game
+    from client.game import Game
 
 class Network:
     def __init__(self, game: 'Game', port: int) -> None:
         self.game = game
 
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server: str = "127.0.0.1"
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serverAddr: str = "127.0.0.1"
         self.port: int = port
 
         self.recieved_packets: queue.Queue[bytes] = queue.Queue()
         self.quit: bool = False
 
-    def connect(self) -> None:
-        self.client.connect((self.server, self.port))
+    def connect(self) -> bool:
+        self.conn.connect((self.serverAddr, self.port))
         recieved = self.recv()
 
         if recieved is None:
             print("No handshake sent from server")
-            self.close_connection()
+            return False
         
         elif self.handle_packet(recieved) is not None:
             print("Handshake failed (incorrect data recieved) when connecting to server")
             # probably should send back a failure packet but cba rn
-            self.close_connection()
-        
-        if self.quit:
-            sys.exit()
+            return False
 
         self.send(C2SHandshake())
-        print("Successfully established connection to server")
+        # print("Successfully established connection to server")
+        return True
     
     def send(self, packet: Packet) -> None:
         # print(packet.encode())
-        PacketHeader.send_packet(self.client, packet)
+        PacketHeader.send_packet(self.conn, packet)
 
     def recv(self) -> Optional[bytes]:
-        header = self.client.recv(PacketHeader.HEADER_SIZE)
+        header = self.conn.recv(PacketHeader.HEADER_SIZE)
         if not header:
             return None
 
         packet_size = PacketHeader.get_packet_size(header)
 
-        raw_packet = self.client.recv(packet_size)
+        raw_packet = self.conn.recv(packet_size)
         if not raw_packet:
             return None
         
@@ -68,23 +64,26 @@ class Network:
                 raw_packet = self.recv()
 
                 if raw_packet is None:
-                    print("Disconnected")
-                    self.close_connection()
+                    if not self.quit:
+                        print("Disconnected")
+                        self.close_connection()
                     break
 
                 self.recieved_packets.put(raw_packet)
 
             except OSError as e:
                 if e.errno == 9:
-                    print("Disconnected")
-                    self.close_connection()
+                    if not self.quit:
+                        print("Disconnected")
+                        self.close_connection()
                     break
                 else:
                     raise e
 
             except Exception as e:
                 print("Network Error: ", e)
-                self.close_connection()
+                if not self.quit:
+                    self.close_connection()
                 break
 
     def packet_loop(self) -> None:
@@ -94,13 +93,13 @@ class Network:
             self.recieved_packets.task_done()
 
     def close_connection(self) -> None:
-        try:
-            self.client.shutdown(socket.SHUT_RDWR)
-            self.client.close()
-        except:
-            pass
+        if self.quit == True:
+            return
 
         self.quit = True
+
+        self.conn.shutdown(socket.SHUT_RDWR)
+        self.conn.close()
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 
@@ -125,7 +124,7 @@ class Network:
                 client_players: list[ClientPlayer] = []
 
                 for common_player in players_packet.players:
-                    client_players.append(ClientPlayer.from_common(common_player, self.game))
+                    client_players.append(ClientPlayer.from_common(common_player))
                 
                 self.game.players = client_players
             
@@ -135,7 +134,7 @@ class Network:
                 client_bullets: list[ClientBullet] = []
 
                 for common_bullet in bullets_packet.bullets:
-                    client_bullets.append(ClientBullet.from_common(common_bullet, self.game))
+                    client_bullets.append(ClientBullet.from_common(common_bullet))
                 
                 self.game.bullets = client_bullets
             
@@ -147,17 +146,3 @@ class Network:
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
                 return ConnectionError()
-    
-    def send_updates(self) -> None:
-        if self.game.movement_codes_dirty:
-            dx = self.game.movement_codes[3] - self.game.movement_codes[2]
-            dy = self.game.movement_codes[1] - self.game.movement_codes[0]
-            self.send(C2SMovementUpdate(Vec2D(dx,dy)))
-
-            self.game.movement_codes_dirty = False
-        
-        if self.game.shoot_angle != -1:
-            roundedAngle: int = int(self.game.shoot_angle * 100) # fixed point decimal of angle 00000-36000
-
-            self.send(C2SCreateBullet(roundedAngle))
-            self.game.shoot_angle = -1

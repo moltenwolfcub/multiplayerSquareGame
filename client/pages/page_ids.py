@@ -1,0 +1,2 @@
+PAGE_MENU = 0
+PAGE_GAME = 1

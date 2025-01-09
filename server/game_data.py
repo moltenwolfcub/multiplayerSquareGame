@@ -15,8 +15,6 @@ class GameData:
     def __init__(self, server: 'Server') -> None:
         self.server: Server = server
 
-        self.settings: Settings = Settings()
-
         self.players: list[CommonPlayer] = []
         self.bullets: list[CommonBullet] = []
     
@@ -28,15 +26,15 @@ class GameData:
                 continue
             
             players_dirty = True
-            velocity: Vec2D = player.mov_dir * self.settings.player_speed
+            velocity: Vec2D = player.mov_dir * Settings.player_speed
 
             if player.mov_dir.x and player.mov_dir.y:
                 velocity = velocity / 1.2
 
             new_pos = player.pos + velocity
 
-            player.pos.x = min(self.settings.world_width  - self.settings.player_radius, max(self.settings.player_radius, new_pos.x))
-            player.pos.y = min(self.settings.world_height - self.settings.player_radius, max(self.settings.player_radius, new_pos.y))
+            player.pos.x = min(Settings.world_width  - Settings.player_radius, max(Settings.player_radius, new_pos.x))
+            player.pos.y = min(Settings.world_height - Settings.player_radius, max(Settings.player_radius, new_pos.y))
 
         if players_dirty:
             self.server.broadcast(S2CPlayers(self.players))
@@ -47,14 +45,14 @@ class GameData:
             # pol to cart
             shifted_angle: float = (bullet.shoot_angle / 100) - 90
 
-            rawx = int(self.settings.bullet_speed * math.cos(math.radians(shifted_angle)))
-            rawy = int(self.settings.bullet_speed * math.sin(math.radians(shifted_angle)))
+            rawx = int(Settings.bullet_speed * math.cos(math.radians(shifted_angle)))
+            rawy = int(Settings.bullet_speed * math.sin(math.radians(shifted_angle)))
 
             bullet.pos += Vec2D(rawx, rawy)
 
             bullet_dirty = True
 
-            if not self.settings.world_rect.contains(bullet.pos):
+            if not Settings.world_rect.contains(bullet.pos):
                 self.bullets.remove(bullet)
                 continue
         
@@ -69,8 +67,8 @@ class GameData:
         self.add_player(CommonPlayer(
             id,
             Vec2D(
-                random.randint(self.settings.player_radius, self.settings.world_width-self.settings.player_radius),
-                random.randint(self.settings.player_radius, self.settings.world_height-self.settings.player_radius)
+                random.randint(Settings.player_radius, Settings.world_width-Settings.player_radius),
+                random.randint(Settings.player_radius, Settings.world_height-Settings.player_radius)
             ),
             Vec2D(0,0),
             Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))

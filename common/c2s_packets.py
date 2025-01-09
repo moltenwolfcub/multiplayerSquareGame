@@ -127,3 +127,16 @@ class C2SCreateBullet(Packet):
         angle: int = int.from_bytes(packet_data)
 
         return C2SCreateBullet(angle)
+
+class C2SClientDisconnect(Packet):
+    def __init__(self) -> None:
+        super().__init__(packet_ids.C2S_CLIENT_DISCONNECT)
+
+    @override
+    def encode_data(self) -> bytes:
+        return bytes()
+
+    @override
+    @staticmethod
+    def decode_data(data: bytes) -> 'C2SRequestPlayerList':
+        return C2SRequestPlayerList()

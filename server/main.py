@@ -14,6 +14,7 @@ from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2C
 from server.connection import Connection
 from server.game_data import GameData
 from server.raw_packet import RawPacket
+from server.settings import Settings
 
 
 class Server:
@@ -101,21 +102,21 @@ class Server:
             check_packet = self.recv(conn)
         except ConnectionResetError:
             print(f"Error during response from closed peer.")
-            self.close_connection(conn, False)
+            self.close_connection(conn, was_open=False)
             return ConnectionError()
 
         if check_packet is None:
             print(f"No response to handshake from peer: {conn.get_peer_name()}")
             self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
-            self.close_connection(conn, False)
+            self.close_connection(conn, was_open=False)
             return ConnectionError()
         
         if self.handle_packet(RawPacket(check_packet, conn)) is not None:
             print(f"Handshake failed (incorrect data recieved) when connecting to peer: {conn.get_peer_name()}")
             self.send(conn, S2CFailedHandshake())
             time.sleep(0.1) # time for client to close on their end
-            self.close_connection(conn, False)
+            self.close_connection(conn, was_open=False)
             return ConnectionError()
         
         print(f"Connection established to peer: {conn.get_peer_name()}")
@@ -123,8 +124,8 @@ class Server:
     def close_server(self) -> None:
         self.quit = True
 
-    def close_connection(self, conn: Connection, was_open: bool = True) -> None:
-        conn.close()
+    def close_connection(self, conn: Connection, was_open: bool = True, shutdown: bool = True) -> None:
+        conn.close(shutdown)
         if was_open:
             self.on_client_disconnect(conn)
         
@@ -198,7 +199,7 @@ class Server:
             self.game.update()
 
             tick_stop = time.perf_counter_ns()
-            time_remaining_ns = self.game.settings.tick_time_ns - (tick_stop-tick_start)
+            time_remaining_ns = Settings.tick_time_ns - (tick_stop-tick_start)
 
             if time_remaining_ns > 0:
                 time.sleep(time_remaining_ns/1_000_000_000)
@@ -280,6 +281,9 @@ class Server:
                 self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
 
                 self.broadcast(S2CBullets(self.game.bullets))
+            
+            case packet_ids.C2S_CLIENT_DISCONNECT:
+                self.close_connection(raw_packet.sender, shutdown=False)
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")
