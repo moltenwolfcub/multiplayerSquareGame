@@ -33,7 +33,7 @@ class GamePage(Page):
     
     @override
     def close(self) -> None:
-        self.game.network.close_connection()
+        self.game.close()
 
     @override
     def on_resize(self, scale_factor: float) -> None:

@@ -1,6 +1,5 @@
 import queue
 import socket
-import sys
 from typing import TYPE_CHECKING, Optional
 
 from client.bullet import ClientBullet
@@ -25,24 +24,22 @@ class Network:
         self.recieved_packets: queue.Queue[bytes] = queue.Queue()
         self.quit: bool = False
 
-    def connect(self) -> None:
+    def connect(self) -> bool:
         self.conn.connect((self.serverAddr, self.port))
         recieved = self.recv()
 
         if recieved is None:
             print("No handshake sent from server")
-            self.close_connection()
+            return False
         
         elif self.handle_packet(recieved) is not None:
             print("Handshake failed (incorrect data recieved) when connecting to server")
             # probably should send back a failure packet but cba rn
-            self.close_connection()
-        
-        if self.quit:
-            sys.exit()
+            return False
 
         self.send(C2SHandshake())
-        print("Successfully established connection to server")
+        # print("Successfully established connection to server")
+        return True
     
     def send(self, packet: Packet) -> None:
         # print(packet.encode())
@@ -67,23 +64,26 @@ class Network:
                 raw_packet = self.recv()
 
                 if raw_packet is None:
-                    print("Disconnected")
-                    self.close_connection()
+                    if not self.quit:
+                        print("Disconnected")
+                        self.close_connection()
                     break
 
                 self.recieved_packets.put(raw_packet)
 
             except OSError as e:
                 if e.errno == 9:
-                    print("Disconnected")
-                    self.close_connection()
+                    if not self.quit:
+                        print("Disconnected")
+                        self.close_connection()
                     break
                 else:
                     raise e
 
             except Exception as e:
                 print("Network Error: ", e)
-                self.close_connection()
+                if not self.quit:
+                    self.close_connection()
                 break
 
     def packet_loop(self) -> None:
@@ -93,13 +93,13 @@ class Network:
             self.recieved_packets.task_done()
 
     def close_connection(self) -> None:
-        try:
-            self.conn.shutdown(socket.SHUT_RDWR)
-            self.conn.close()
-        except:
-            pass
+        if self.quit == True:
+            return
 
         self.quit = True
+
+        self.conn.shutdown(socket.SHUT_RDWR)
+        self.conn.close()
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 

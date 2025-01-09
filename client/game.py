@@ -9,7 +9,7 @@ from client.bullet import ClientBullet
 from client.network import Network
 from client.pages import page_ids
 from client.player import ClientPlayer
-from common.c2s_packets import C2SCreateBullet, C2SMovementUpdate, C2SRequestPlayerList
+from common.c2s_packets import C2SClientDisconnect, C2SCreateBullet, C2SMovementUpdate, C2SRequestPlayerList
 from common.data_types import Vec2D
 
 
@@ -40,7 +40,10 @@ class Game:
 
     def initialise_network(self, port: int) -> None:
         self.network = Network(self, port)
-        self.network.connect()
+        success: bool = self.network.connect()
+        if not success:
+            self.page_changer(page_ids.PAGE_MENU)
+            return
 
         _thread.start_new_thread(self.network.packet_loop, ())
         _thread.start_new_thread(self.network.read_loop, ())
@@ -94,7 +97,9 @@ class Game:
     def _check_keydown_events(self, event: pygame.event.Event) -> int:
         match event.key:
             case keybinds.EXIT:
-                return 1
+                if self.network_live:
+                    self.page_changer(page_ids.PAGE_MENU)
+                return 0
 
             case keybinds.MOV_UP:
                 self.movement_codes[0] = 1
@@ -181,3 +186,9 @@ class Game:
             self.shoot_angle = 180 + alpha
         elif x < 0 and y <= 0:
             self.shoot_angle = 270 + alpha
+
+    def close(self, update_server: bool = True) -> None:
+        if update_server:
+            self.network.send(C2SClientDisconnect())
+        
+        self.network.close_connection()
