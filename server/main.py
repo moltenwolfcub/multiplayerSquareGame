@@ -10,7 +10,7 @@ from common.bullet import CommonBullet
 from common.c2s_packets import C2SCreateBullet, C2SHandshake, C2SMovementUpdate
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CBullets, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
+from common.s2c_packets import S2CBullets, S2CDisconnectPlayer, S2CFailedHandshake, S2CHandshake, S2CPlayers, S2CSendID
 from server.connection import Connection
 from server.game_data import GameData
 from server.raw_packet import RawPacket
@@ -240,6 +240,7 @@ class Server:
                 case "k" | "kick":
                     print("CLEARING")
                     for c in self.open_connections:
+                        self.broadcast(S2CDisconnectPlayer(S2CDisconnectPlayer.KICKED))
                         self.close_connection(c)
 
                 case _:

@@ -3,12 +3,13 @@ import socket
 from typing import TYPE_CHECKING, Optional
 
 from client.bullet import ClientBullet
+from client.pages import page_ids
 from client.player import ClientPlayer
 from common import packet_ids
 from common.c2s_packets import C2SHandshake
 from common.packet_base import Packet
 from common.packet_header import PacketHeader
-from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
+from common.s2c_packets import S2CBullets, S2CDisconnectPlayer, S2CHandshake, S2CPlayers, S2CSendID
 
 if TYPE_CHECKING:
     from client.game import Game
@@ -142,6 +143,15 @@ class Network:
                 id_packet: S2CSendID = S2CSendID.decode_data(raw_packet)
 
                 self.game.this_player_id =  id_packet.player_id
+            
+            case packet_ids.S2C_PLAYER_DISCONNECT:
+                player_disconnect_packet: S2CDisconnectPlayer = S2CDisconnectPlayer.decode_data(raw_packet)
+
+                if player_disconnect_packet.reason == S2CDisconnectPlayer.KICKED:
+                    print("Kicked by server")
+                
+                self.game.update_server_on_exit = False
+                self.game.page_changer(page_ids.PAGE_MENU)
 
             case _:
                 print(f"Unknown packet (ID: {packet_type})")

@@ -38,6 +38,8 @@ class Game:
 
         self.shoot_angle: float = -1
 
+        self.update_server_on_exit = True
+
     def initialise_network(self, port: int) -> None:
         self.network = Network(self, port)
         success: bool = self.network.connect()
@@ -187,8 +189,8 @@ class Game:
         elif x < 0 and y <= 0:
             self.shoot_angle = 270 + alpha
 
-    def close(self, update_server: bool = True) -> None:
-        if update_server:
+    def close(self) -> None:
+        if self.update_server_on_exit:
             self.network.send(C2SClientDisconnect())
         
         self.network.close_connection()

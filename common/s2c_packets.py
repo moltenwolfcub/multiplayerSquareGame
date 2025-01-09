@@ -128,3 +128,23 @@ class S2CSendID(Packet):
 
         player_id = int.from_bytes(packet_data)
         return S2CSendID(player_id)
+
+class S2CDisconnectPlayer(Packet):
+    KICKED = 0
+
+    def __init__(self, reason: int) -> None:
+        super().__init__(packet_ids.S2C_PLAYER_DISCONNECT)
+
+        self.reason: int = reason
+    
+    @override
+    def encode_data(self) -> bytes:
+        return self.reason.to_bytes(1)
+
+    @override
+    @staticmethod
+    def decode_data(data: bytes) -> 'S2CDisconnectPlayer':
+        packet_data = data[packet_ids.packet_id_size:]
+
+        reason = int.from_bytes(packet_data)
+        return S2CDisconnectPlayer(reason)

@@ -3,7 +3,7 @@ import unittest
 from common.bullet import CommonBullet
 from common.data_types import Color, Vec2D
 from common.player import CommonPlayer
-from common.s2c_packets import S2CBullets, S2CHandshake, S2CPlayers, S2CSendID
+from common.s2c_packets import S2CBullets, S2CDisconnectPlayer, S2CHandshake, S2CPlayers, S2CSendID
 
 
 class s2cPackets(unittest.TestCase):
@@ -54,3 +54,11 @@ class s2cPackets(unittest.TestCase):
         decoded = S2CSendID.decode_data(encoded)
 
         self.assertEqual(packet.player_id, decoded.player_id)
+    
+    def testDisconnectPlayer(self):
+        packet = S2CDisconnectPlayer(0)
+
+        encoded = packet.encode()
+        decoded = S2CDisconnectPlayer.decode_data(encoded)
+
+        self.assertEqual(packet.reason, decoded.reason)
