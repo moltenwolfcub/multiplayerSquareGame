@@ -93,14 +93,15 @@ class Network:
             self.handle_packet(raw_packet)
             self.recieved_packets.task_done()
 
-    def close_connection(self) -> None:
+    def close_connection(self, needs_closing: bool = True) -> None:
         if self.quit == True:
             return
 
         self.quit = True
 
-        self.conn.shutdown(socket.SHUT_RDWR)
-        self.conn.close()
+        if needs_closing:
+            self.conn.shutdown(socket.SHUT_RDWR)
+            self.conn.close()
 
 #===== ABOVE THIS LINE IS NETWORK INTERNALS =====
 

@@ -25,7 +25,11 @@ class Game:
             self.initialise_network(port)
             self.network_live: bool = True
         except ConnectionRefusedError:
+            print(f"No server found on port {port}")
             self.network_live: bool = False
+        except ConnectionAbortedError:
+            print("Handshake failure aborting")
+            self.network_live = False
 
         self.players: list[ClientPlayer] = []
         if self.network_live:
@@ -38,14 +42,14 @@ class Game:
 
         self.shoot_angle: float = -1
 
-        self.update_server_on_exit = True
+        self.update_server_on_exit = self.network_live
 
     def initialise_network(self, port: int) -> None:
         self.network = Network(self, port)
         success: bool = self.network.connect()
         if not success:
             self.page_changer(page_ids.PAGE_MENU)
-            return
+            raise ConnectionAbortedError()
 
         _thread.start_new_thread(self.network.packet_loop, ())
         _thread.start_new_thread(self.network.read_loop, ())
@@ -191,4 +195,4 @@ class Game:
         if self.update_server_on_exit:
             self.network.send(C2SClientDisconnect())
         
-        self.network.close_connection()
+        self.network.close_connection(needs_closing=self.update_server_on_exit)
