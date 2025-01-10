@@ -122,6 +122,9 @@ class Server:
         print(f"Connection established to peer: {conn.get_peer_name()}")
 
     def close_server(self) -> None:
+        for c in self.open_connections:
+            self.broadcast(S2CDisconnectPlayer(S2CDisconnectPlayer.SERVER_CLOSED))
+            self.close_connection(c)
         self.quit = True
 
     def close_connection(self, conn: Connection, was_open: bool = True, shutdown: bool = True) -> None:
