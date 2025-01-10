@@ -150,6 +150,12 @@ class Network:
             if player_disconnect_packet.reason == S2CDisconnectPlayer.KICKED:
                 print("Kicked by server")
             
+            elif player_disconnect_packet.reason == S2CDisconnectPlayer.KILLED:
+                print("You Died")
+
+            else:
+                print(f"Unknown disconnect reason: {player_disconnect_packet.reason}")
+            
             self.game.update_server_on_exit = False
             self.game.page_changer(page_ids.PAGE_MENU)
 

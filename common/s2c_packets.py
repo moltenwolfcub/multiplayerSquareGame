@@ -131,6 +131,7 @@ class S2CSendID(Packet):
 
 class S2CDisconnectPlayer(Packet):
     KICKED = 0
+    KILLED = 1
 
     def __init__(self, reason: int) -> None:
         super().__init__(packet_ids.S2C_PLAYER_DISCONNECT)
