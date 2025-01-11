@@ -97,6 +97,9 @@ class Game:
             return self._check_keydown_events(event)
         elif event.type == pygame.KEYUP:
             return self._check_keyup_events(event)
+    
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            return self._check_mousedown_events(event)
         
         return 0
                    
@@ -148,6 +151,14 @@ class Game:
             self.movement_codes_dirty = True
             return 0
 
+        else:
+            return 0
+    
+    def _check_mousedown_events(self, event: pygame.event.Event) -> int:
+        if event.button == pygame.BUTTON_LEFT:
+            self.shoot()
+            return 0
+        
         else:
             return 0
     
