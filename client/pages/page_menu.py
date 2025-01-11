@@ -1,6 +1,5 @@
 from typing import Callable, Optional, override
 
-from PIL import ImageOps
 import pygame
 
 from client import keybinds
@@ -12,7 +11,7 @@ from client.settings import Settings
 from common.data_types import Color, Vec2D
 
 try:
-    from PIL import Image, ImageFilter
+    from PIL import Image, ImageFilter, ImageOps
 
     def create_blob(radius: int, color: Color, blur_radius: int = 50) -> pygame.Surface:
         img_size: tuple[int, int] = (radius*4 + blur_radius*2, radius*4 + blur_radius*2)
