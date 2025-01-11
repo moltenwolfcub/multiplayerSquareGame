@@ -21,6 +21,7 @@ class Settings:
     color_menu_button_outline_dark: Color = Color(112, 25, 25)
     color_menu_button_border: Color = Color(0, 0, 0)
     color_menu_button_border_alt: Color = Color(108, 151, 166)
+    color_menu_title_outline: Color = Color(0, 0, 0)
 
     # player
     player_radius: int = 50

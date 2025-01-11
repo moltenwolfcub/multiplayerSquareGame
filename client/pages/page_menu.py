@@ -3,6 +3,7 @@ from typing import Callable, override
 import pygame
 
 from client import keybinds
+from client.assets import fonts
 from client.pages.button_play import PlayButton
 from client.pages.page import Page
 from client.player import ClientPlayer
@@ -112,6 +113,16 @@ class MenuPage(Page):
             screen.blit(image, blit_pos)
         
         self.play_button.draw(screen, scaler)
+
+        # title
+        text_image: pygame.Surface; text_rect: pygame.Rect
+        text_image, text_rect = fonts.d_la_cruz.render(text="SQUARES", size=190, fgcolor=Settings.color_menu_title_outline.to_tuple())
+        text_rect.center = (816, 171)
+        scaled_rect = scaler(text_rect)
+
+        text_image = pygame.transform.smoothscale(text_image, scaled_rect.size)
+
+        screen.blit(text_image, scaled_rect)
 
     
     @override
