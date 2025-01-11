@@ -54,25 +54,36 @@ class GameData:
                 self.bullets.remove(bullet)
                 continue
 
+        dead_conns: list[Connection] = []
         for player in self.players:
             player_rect: Rect = Rect(
                 (player.pos-Vec2D(Settings.player_radius, Settings.player_radius)),
                 (player.pos+Vec2D(Settings.player_radius, Settings.player_radius)),
             )
-            conn: Connection = self.server.open_connections[player.id]
+            conn: Optional[Connection] = self.get_connection(player.id)
+            if conn is None:
+                print(f"Couldn't find connection assosiated with player id {player.id}")
+                raise LookupError()
 
             gone_bullets: list[CommonBullet] = []
-
             for bullet in self.bullets:
-                if player_rect.contains(bullet.pos):
-                    self.server.send(conn, S2CDisconnectPlayer(S2CDisconnectPlayer.KILLED))
-                    self.server.close_connection(conn)
+                if bullet.owner is player:
+                    continue
 
+                if player_rect.contains(bullet.pos):
+                    dead_conns.append(conn)
                     gone_bullets.append(bullet)
+
                     bullet_dirty = True
                     players_dirty = True
+                    break
 
-            self.bullets = [b for b in self.bullets if b not in gone_bullets]                    
+            self.bullets = [b for b in self.bullets if b not in gone_bullets]
+
+        for c in dead_conns:
+            self.server.send(c, S2CDisconnectPlayer(S2CDisconnectPlayer.KILLED))
+            self.server.close_connection(c)
+
 
         if players_dirty:
             self.server.broadcast(S2CPlayers(self.players))
@@ -106,4 +117,12 @@ class GameData:
                 return player # if more than 1 player with same ID something very wrong
         
         print(f"Couldn't find player with ID {player_id}")
+        return None
+
+    def get_connection(self, player_id: int) -> Optional[Connection]:
+        for conn in self.server.open_connections:
+            if conn.player_id == player_id:
+                return conn # if more than 1 connection with same ID something very wrong
+        
+        print(f"Couldn't find connection with player ID {player_id}")
         return None
