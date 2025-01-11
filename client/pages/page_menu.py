@@ -3,7 +3,7 @@ from typing import Callable, Optional, override
 import pygame
 
 from client import keybinds
-from client.assets import fonts
+from client.assets import fonts, textures
 from client.pages.button_play import PlayButton
 from client.pages.page import Page
 from client.player import ClientPlayer
@@ -154,6 +154,10 @@ class MenuPage(Page):
 
         text_image = pygame.transform.smoothscale(text_image, scaled_rect.size)
 
+        # filling
+        text_filling = pygame.transform.smoothscale(textures.menu_title_filling, scaled_rect.size)
+        text_filling.set_alpha(220)
+
         # shadow
         shadow: pygame.Surface
         if self.title_drop_shadow is None:
@@ -166,6 +170,8 @@ class MenuPage(Page):
         shadow_rect.center = scaled_rect.center
 
         screen.blit(shadow, shadow_rect)
+
+        screen.blit(text_filling, scaled_rect)
 
         screen.blit(text_image, scaled_rect)
 
