@@ -1,5 +1,6 @@
-from typing import Callable, override
+from typing import Callable, Optional, override
 
+from PIL import ImageOps
 import pygame
 
 from client import keybinds
@@ -36,12 +37,42 @@ try:
 
         return pygame_blob
 
+    def title_drop_shadow(text: pygame.Surface, blur_radius: int = 10) -> pygame.Surface:
+        size: Vec2D = Vec2D(*text.get_size())
+        size += Vec2D(blur_radius*8, blur_radius*8)
+
+        bg_text = pygame.Surface(size.to_tuple())
+        bg_text.fill((255,255,255))
+        bg_text.blit(text, (blur_radius*4, blur_radius*4))
+
+        pillow_text: Image.Image = Image.frombytes("RGB", size.to_tuple(), pygame.image.tobytes(bg_text, "RGB", False))
+
+        blurred_mask = pillow_text.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+
+        alpha_mask = ImageOps.invert(blurred_mask.convert('L'))
+
+        shadow: Image.Image = Image.new("RGBA", size.to_tuple(), (0, 0, 0)) # shadow color
+        shadow.putalpha(alpha_mask)
+
+        pygame_shadow = pygame.image.frombytes(shadow.tobytes(), size.to_tuple(), "RGBA", False)
+
+        return pygame_shadow
+
 except ModuleNotFoundError:
     def create_blob(radius: int, color: Color, blur_radius: int = 50) -> pygame.Surface:
         circle = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
         pygame.draw.circle(circle, color.to_tuple(), (radius, radius), radius)
 
         return circle
+    
+    def title_drop_shadow(text: pygame.Surface, blur_radius: int = 50) -> pygame.Surface:
+        new_rect: pygame.Rect = pygame.Rect(0, 0, *(Vec2D(*text.get_size())+Vec2D(blur_radius//2, blur_radius//2)).to_tuple())
+
+        shadow = pygame.Surface(new_rect.size, pygame.SRCALPHA)
+        shadow.fill((0,0,0))
+        shadow.set_alpha(25)
+
+        return shadow
 
 
 class MenuPage(Page):
@@ -63,6 +94,8 @@ class MenuPage(Page):
         self.generate_blobs()
         
         self.play_button = PlayButton()
+
+        self.title_drop_shadow: Optional[pygame.Surface] = None
 
     def generate_blobs(self) -> None:
         self.lights.clear()
@@ -102,7 +135,7 @@ class MenuPage(Page):
             p.draw(screen, scaler)
 
         for l in self.lights:
-            # rect: pygame.Rect = scaler(l[1])
+            rect: pygame.Rect = scaler(l[1])
             rect: pygame.Rect = l[1]
             blit_pos = rect.topleft
 
@@ -122,6 +155,19 @@ class MenuPage(Page):
 
         text_image = pygame.transform.smoothscale(text_image, scaled_rect.size)
 
+        # shadow
+        shadow: pygame.Surface
+        if self.title_drop_shadow is None:
+            shadow = title_drop_shadow(text_image)
+            self.title_drop_shadow = shadow
+        else:
+            shadow = self.title_drop_shadow
+
+        shadow_rect = shadow.get_rect()
+        shadow_rect.center = scaled_rect.center
+
+        screen.blit(shadow, shadow_rect)
+
         screen.blit(text_image, scaled_rect)
 
     
@@ -134,6 +180,8 @@ class MenuPage(Page):
         if self.current_sf == scale_factor:
             return
         self.current_sf = scale_factor
+
+        self.title_drop_shadow = None
 
         self.generate_blobs()
 
