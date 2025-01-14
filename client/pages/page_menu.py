@@ -4,7 +4,7 @@ import pygame
 
 from client import keybinds
 from client.pages import page_ids
-from client.pages.button_play import PlayButton
+from client.pages.button_play import Button
 from client.pages.page import Page
 from client.player import ClientPlayer
 from client.settings import Settings
@@ -65,7 +65,7 @@ class MenuPage(Page):
         self.current_sf: float = 1
         self.generate_blobs()
         
-        self.play_button = PlayButton()
+        self.play_button = Button("Play", Vec2D(556, 459), Vec2D(488, 154))
 
     def generate_blobs(self) -> None:
         self.lights.clear()

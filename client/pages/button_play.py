@@ -42,11 +42,13 @@ except ModuleNotFoundError:
         return shadow
 
 
-class PlayButton:
+class Button:
 
-    def __init__(self) -> None:
-        self.pos: Vec2D = Vec2D(556, 459)
-        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, 488, 154)
+    def __init__(self, msg: str, pos: Vec2D, size: Vec2D) -> None:
+        self.text: str = msg
+
+        self.pos: Vec2D = pos#Vec2D(556, 459)
+        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, *size.to_tuple())#488, 154)
 
         self.alternate_color: bool = False
 
@@ -101,8 +103,9 @@ class PlayButton:
 
         # text
         text_image: pygame.Surface; text_rect: pygame.Rect
-        text_image, text_rect = fonts.dyuthi_b.render(text="Play", size=110, fgcolor=Settings.color_menu_button_border.to_tuple())
-        text_rect.center = (809, 543)
+        text_image, text_rect = fonts.dyuthi_b.render(text=self.text, size=110, fgcolor=Settings.color_menu_button_border.to_tuple())
+        text_rect.center = self.rect.center
+        text_rect.y += 7
         scaled_rect = scaler(text_rect)
 
         text_image = pygame.transform.smoothscale(text_image, scaled_rect.size)
