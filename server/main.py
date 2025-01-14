@@ -277,7 +277,7 @@ class Server:
                 print(f"Error! No player assosiated with connection: {raw_packet.sender}")
                 return LookupError()
 
-            self.game.bullets.append(CommonBullet(shooting_player.pos.clone(), bullet_packet.angle))
+            self.game.bullets.append(CommonBullet(pos=shooting_player.pos.clone(), shoot_angle=bullet_packet.angle, shooter=shooting_player))
 
             self.broadcast(S2CBullets(self.game.bullets))
         

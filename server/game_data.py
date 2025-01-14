@@ -3,9 +3,10 @@ import random
 from typing import TYPE_CHECKING, Optional
 
 from common.bullet import CommonBullet
-from common.data_types import Color, Vec2D
+from common.data_types import Color, Rect, Vec2D
 from common.player import CommonPlayer
-from common.s2c_packets import S2CBullets, S2CPlayers
+from common.s2c_packets import S2CBullets, S2CDisconnectPlayer, S2CPlayers
+from server.connection import Connection
 from server.settings import Settings
 
 if TYPE_CHECKING:
@@ -35,9 +36,6 @@ class GameData:
 
             player.pos.x = min(Settings.world_width  - Settings.player_radius, max(Settings.player_radius, new_pos.x))
             player.pos.y = min(Settings.world_height - Settings.player_radius, max(Settings.player_radius, new_pos.y))
-
-        if players_dirty:
-            self.server.broadcast(S2CPlayers(self.players))
         
         bullet_dirty = False
         for bullet in self.bullets:
@@ -55,6 +53,40 @@ class GameData:
             if not Settings.world_rect.contains(bullet.pos):
                 self.bullets.remove(bullet)
                 continue
+
+        dead_conns: list[Connection] = []
+        for player in self.players:
+            player_rect: Rect = Rect(
+                (player.pos-Vec2D(Settings.player_radius, Settings.player_radius)),
+                (player.pos+Vec2D(Settings.player_radius, Settings.player_radius)),
+            )
+            conn: Optional[Connection] = self.get_connection(player.id)
+            if conn is None:
+                print(f"Couldn't find connection assosiated with player id {player.id}")
+                raise LookupError()
+
+            gone_bullets: list[CommonBullet] = []
+            for bullet in self.bullets:
+                if bullet.owner is player:
+                    continue
+
+                if player_rect.contains(bullet.pos):
+                    dead_conns.append(conn)
+                    gone_bullets.append(bullet)
+
+                    bullet_dirty = True
+                    players_dirty = True
+                    break
+
+            self.bullets = [b for b in self.bullets if b not in gone_bullets]
+
+        for c in dead_conns:
+            self.server.send(c, S2CDisconnectPlayer(S2CDisconnectPlayer.KILLED))
+            self.server.close_connection(c)
+
+
+        if players_dirty:
+            self.server.broadcast(S2CPlayers(self.players))
         
         if bullet_dirty:
             self.server.broadcast(S2CBullets(self.bullets))
@@ -85,4 +117,12 @@ class GameData:
                 return player # if more than 1 player with same ID something very wrong
         
         print(f"Couldn't find player with ID {player_id}")
+        return None
+
+    def get_connection(self, player_id: int) -> Optional[Connection]:
+        for conn in self.server.open_connections:
+            if conn.player_id == player_id:
+                return conn # if more than 1 connection with same ID something very wrong
+        
+        print(f"Couldn't find connection with player ID {player_id}")
         return None
