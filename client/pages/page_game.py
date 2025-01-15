@@ -1,6 +1,17 @@
-from typing import Callable, override
+import sys
+from typing import Callable
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing import Any, TypeVar
+
+    F = TypeVar("F", bound=Callable[..., Any])
+    def override(method: F, /) -> F:
+        return method
 
 import pygame
+
 from client.game import Game
 from client.pages.page import Page
 from client.settings import Settings

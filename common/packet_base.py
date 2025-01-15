@@ -11,13 +11,13 @@ class Packet(ABC):
         return self.id
     
     def encode(self) -> bytes:
-        encoded_id = self.id.to_bytes(packet_ids.packet_id_size)
+        encoded_id = self.id.to_bytes(packet_ids.packet_id_size, byteorder="big")
         
         return encoded_id + self.encode_data()
 
     @staticmethod
     def decode_id(data: bytes) -> int:
-        return int.from_bytes(data[:packet_ids.packet_id_size])
+        return int.from_bytes(data[:packet_ids.packet_id_size], byteorder="big")
 
 
     @staticmethod

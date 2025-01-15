@@ -10,13 +10,13 @@ class PacketHeader:
         self.packet_size: int = len(self.payload)
     
     def send(self, conn: socket.socket) -> None:
-        header: bytes = self.packet_size.to_bytes(PacketHeader.HEADER_SIZE)
+        header: bytes = self.packet_size.to_bytes(PacketHeader.HEADER_SIZE, byteorder="big")
 
         conn.send(header + self.payload)
     
     @staticmethod
     def sendBytes(conn: socket.socket, data: bytes) -> None:
-        header: bytes = len(data).to_bytes(PacketHeader.HEADER_SIZE)
+        header: bytes = len(data).to_bytes(PacketHeader.HEADER_SIZE, byteorder="big")
 
         conn.send(header + data)
 
@@ -24,10 +24,10 @@ class PacketHeader:
     def send_packet(conn: socket.socket, packet: Packet) -> None:
         data: bytes = packet.encode()
 
-        header: bytes = len(data).to_bytes(PacketHeader.HEADER_SIZE)
+        header: bytes = len(data).to_bytes(PacketHeader.HEADER_SIZE, byteorder="big")
 
         conn.send(header + data)
 
     @staticmethod
     def get_packet_size(header: bytes) -> int:
-        return int.from_bytes(header)
+        return int.from_bytes(header, byteorder="big")

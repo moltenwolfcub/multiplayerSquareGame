@@ -13,15 +13,15 @@ class CommonBullet:
         self.shoot_angle: int = shoot_angle
 
     def encode(self) -> bytes:
-        b = self.pos.x.to_bytes(2)
-        b += self.pos.y.to_bytes(2)
+        b = self.pos.x.to_bytes(2, byteorder="big")
+        b += self.pos.y.to_bytes(2, byteorder="big")
 
         return b
 
     @staticmethod
     def decode(bytes: bytes) -> 'CommonBullet':
-        x = int.from_bytes(bytes[:2])
-        y = int.from_bytes(bytes[2:4])
+        x = int.from_bytes(bytes[:2], byteorder="big")
+        y = int.from_bytes(bytes[2:4], byteorder="big")
 
         return CommonBullet(pos=Vec2D(x, y), shoot_angle=-1, shooter=None)
     

@@ -1,4 +1,13 @@
-from typing import override
+import sys
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing import Any, Callable, TypeVar
+
+    F = TypeVar("F", bound=Callable[..., Any])
+    def override(method: F, /) -> F:
+        return method
 
 from common import packet_ids
 from common.bullet import CommonBullet
@@ -119,14 +128,14 @@ class S2CSendID(Packet):
     
     @override
     def encode_data(self) -> bytes:
-        return self.player_id.to_bytes(1)
+        return self.player_id.to_bytes(1, byteorder="big")
 
     @override
     @staticmethod
     def decode_data(data: bytes) -> 'S2CSendID':
         packet_data = data[packet_ids.packet_id_size:]
 
-        player_id = int.from_bytes(packet_data)
+        player_id = int.from_bytes(packet_data, byteorder="big")
         return S2CSendID(player_id)
 
 class S2CDisconnectPlayer(Packet):
@@ -141,12 +150,12 @@ class S2CDisconnectPlayer(Packet):
     
     @override
     def encode_data(self) -> bytes:
-        return self.reason.to_bytes(1)
+        return self.reason.to_bytes(1, byteorder="big")
 
     @override
     @staticmethod
     def decode_data(data: bytes) -> 'S2CDisconnectPlayer':
         packet_data = data[packet_ids.packet_id_size:]
 
-        reason = int.from_bytes(packet_data)
+        reason = int.from_bytes(packet_data, byteorder="big")
         return S2CDisconnectPlayer(reason)

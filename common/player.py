@@ -16,27 +16,27 @@ class CommonPlayer:
     def encode(self) -> bytes:
         b = bytes()
 
-        b += self.id.to_bytes(1) # if ever get over 255 players at once then I'll improve it
+        b += self.id.to_bytes(1, byteorder="big") # if ever get over 255 players at once then I'll improve it
 
-        b += self.pos.x.to_bytes(2)
-        b += self.pos.y.to_bytes(2)
+        b += self.pos.x.to_bytes(2, byteorder="big")
+        b += self.pos.y.to_bytes(2, byteorder="big")
 
-        b += self.color.r.to_bytes(1)
-        b += self.color.g.to_bytes(1)
-        b += self.color.b.to_bytes(1)
+        b += self.color.r.to_bytes(1, byteorder="big")
+        b += self.color.g.to_bytes(1, byteorder="big")
+        b += self.color.b.to_bytes(1, byteorder="big")
 
         return b
 
     @staticmethod
     def decode(bytes: bytes) -> 'CommonPlayer':
-        id = int.from_bytes(bytes[0:1])
+        id = int.from_bytes(bytes[0:1], byteorder="big")
 
-        x = int.from_bytes(bytes[1:3])
-        y = int.from_bytes(bytes[3:5])
+        x = int.from_bytes(bytes[1:3], byteorder="big")
+        y = int.from_bytes(bytes[3:5], byteorder="big")
 
-        r = int.from_bytes(bytes[5:6])
-        g = int.from_bytes(bytes[6:7])
-        b = int.from_bytes(bytes[7:8])
+        r = int.from_bytes(bytes[5:6], byteorder="big")
+        g = int.from_bytes(bytes[6:7], byteorder="big")
+        b = int.from_bytes(bytes[7:8], byteorder="big")
 
         return CommonPlayer(id=id, pos=Vec2D(x, y), mov_dir=Vec2D(0,0), color=Color(r,g,b))
     

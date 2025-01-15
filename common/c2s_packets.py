@@ -1,8 +1,18 @@
-from typing import override
+import sys
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing import Any, Callable, TypeVar
+
+    F = TypeVar("F", bound=Callable[..., Any])
+    def override(method: F, /) -> F:
+        return method
 
 from common import packet_ids
 from common.data_types import Vec2D
 from common.packet_base import Packet
+
 
 class C2SHandshake(Packet):
     EXPECTED_MSG = "pong"
@@ -69,14 +79,14 @@ class C2SMovementUpdate(Packet):
             print(f"error encoding movement bytes. unknown movement Direction y-value {self.mov_dir.y}")
         
         encoded = (bdx << 2) + bdy
-        return encoded.to_bytes(1)
+        return encoded.to_bytes(1, byteorder="big")
 
     @override
     @staticmethod
     def decode_data(data: bytes) -> 'C2SMovementUpdate':
         packet_data = data[packet_ids.packet_id_size:]
 
-        packed_deltas = int.from_bytes(packet_data)
+        packed_deltas = int.from_bytes(packet_data, byteorder="big")
         packed_dx = packed_deltas >> 2
         packed_dy = packed_deltas & 0b0011
 
@@ -111,7 +121,7 @@ class C2SCreateBullet(Packet):
 
     @override
     def encode_data(self) -> bytes:
-        b = self.angle.to_bytes(2)
+        b = self.angle.to_bytes(2, byteorder="big")
 
         return b
 
@@ -120,7 +130,7 @@ class C2SCreateBullet(Packet):
     def decode_data(data: bytes) -> 'C2SCreateBullet':
         packet_data = data[packet_ids.packet_id_size:]
 
-        angle: int = int.from_bytes(packet_data)
+        angle: int = int.from_bytes(packet_data, byteorder="big")
 
         return C2SCreateBullet(angle)
 
