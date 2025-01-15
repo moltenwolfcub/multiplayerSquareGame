@@ -19,7 +19,7 @@ class Page(ABC):
         pass
     
     @abstractmethod
-    def close(self) -> None:
+    def close(self, next_page: int) -> None:
         pass
 
     @abstractmethod

@@ -147,17 +147,20 @@ class Network:
         elif packet_type == packet_ids.S2C_PLAYER_DISCONNECT:
             player_disconnect_packet: S2CDisconnectPlayer = S2CDisconnectPlayer.decode_data(raw_packet)
 
+            self.game.update_server_on_exit = False
+
             if player_disconnect_packet.reason == S2CDisconnectPlayer.KICKED:
                 print("Kicked by server")
+                self.game.page_changer(page_ids.PAGE_MENU)
             
             elif player_disconnect_packet.reason == S2CDisconnectPlayer.KILLED:
                 print("You Died")
+                self.game.page_changer(page_ids.PAGE_DEATH)
 
             else:
                 print(f"Unknown disconnect reason: {player_disconnect_packet.reason}")
+                self.game.page_changer(page_ids.PAGE_MENU)
             
-            self.game.update_server_on_exit = False
-            self.game.page_changer(page_ids.PAGE_MENU)
 
         else:
             print(f"Unknown packet (ID: {packet_type})")

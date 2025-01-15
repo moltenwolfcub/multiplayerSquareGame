@@ -3,6 +3,7 @@ import sys
 import pygame
 
 from client.pages import page_ids
+from client.pages.page_death import DeathPage
 from client.pages.page_game import GamePage
 from client.pages.page_menu import MenuPage
 from client.pages.page import Page
@@ -124,17 +125,26 @@ class Client:
         return mouse_pos
 
     def exit_game(self) -> None:
-        self.page.close()
+        self.page.close(page_ids.PAGE_APP_CLOSE)
         self.quit = True
     
     def change_page(self, page_id: int) -> None:
         if page_id == page_ids.PAGE_MENU:
-            self.page.close()
+            self.page.close(page_id)
 
             self.page = MenuPage(page_changer=self.change_page, mouse_getter=self.get_mouse_pos)
         elif page_id == page_ids.PAGE_GAME:
-            self.page.close()
+            self.page.close(page_id)
             
             self.page = GamePage(page_changer=self.change_page, port=self.port, mouse_getter=self.get_mouse_pos)
+        
+        elif page_id == page_ids.PAGE_DEATH:
+            self.page.close(page_id)
+            
+            if not isinstance(self.page, GamePage):
+                print("AHHHHHHHHHHHHHH")
+                return
+
+            self.page = DeathPage(self.page.game)
         else:
             print(f"Error: Unknown page ID({page_id}). Staying on old page")

@@ -4,7 +4,7 @@ import pygame
 
 from client import keybinds
 from client.pages import page_ids
-from client.pages.button_play import Button
+from client.pages.button import Button
 from client.pages.page import Page
 from client.player import ClientPlayer
 from client.settings import Settings
@@ -127,7 +127,7 @@ class MenuPage(Page):
 
     
     @override
-    def close(self) -> None:
+    def close(self, next_page: int) -> None:
         pass
 
     @override
